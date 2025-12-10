@@ -5,12 +5,12 @@
  * with custom modules and message bus communication.
  */
 
-import { Runtime, Module } from '../src';
+import { Runtime, BaseModule } from '../src';
 
 /**
  * Example motor module
  */
-class MotorModule extends Module {
+class MotorModule extends BaseModule {
   onInit() {
     this.log("Motor module initialized");
   }
@@ -35,7 +35,7 @@ class MotorModule extends Module {
 /**
  * Example sensor module
  */
-class SensorModule extends Module {
+class SensorModule extends BaseModule {
   private readingInterval: any;
 
   onStart() {
@@ -71,8 +71,8 @@ async function main() {
   });
 
   // Register modules
-  runtime.registerModule(new MotorModule({ name: "motor" }));
-  runtime.registerModule(new SensorModule({ name: "sensor" }));
+  runtime.registerModule(new MotorModule("motor"));
+  runtime.registerModule(new SensorModule("sensor"));
 
   // Start the runtime
   await runtime.start();

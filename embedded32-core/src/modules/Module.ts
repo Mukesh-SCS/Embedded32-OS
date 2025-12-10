@@ -21,6 +21,12 @@ export abstract class BaseModule implements Module {
     this.config = context.config;
   }
 
+  protected log(message: string, level: 'debug' | 'info' | 'warn' | 'error' = 'info') {
+    if (this.logger) {
+      this.logger[level](`[${this.name}] ${message}`);
+    }
+  }
+
   onInit(): Promise<void> | void {}
   onStart(): Promise<void> | void {}
   onStop(): Promise<void> | void {}
