@@ -1,11 +1,8 @@
 /**
  * Basic Runtime Example
- * 
- * Demonstrates how to use embedded32-core to create a simple runtime
- * with custom modules and message bus communication.
  */
 
-import { Runtime, BaseModule } from '../src';
+import { Runtime, BaseModule } from "../src";
 
 /**
  * Example motor module
@@ -18,12 +15,12 @@ class MotorModule extends BaseModule {
   onStart() {
     this.log("Motor module started");
 
-    // Subscribe to speed control messages
-    this.bus.subscribe("motor.speed.set", async (msg: any) => {
+    // Listen for speed control messages
+    this.bus.subscribe("motor.speed.set", (msg: any) => {
       this.log(`Motor speed set to: ${msg.payload.value}`);
     });
 
-    // Publish a ready message
+    // Notify system that motor is ready
     this.bus.publish("motor.ready", { status: "ready" });
   }
 
@@ -36,57 +33,49 @@ class MotorModule extends BaseModule {
  * Example sensor module
  */
 class SensorModule extends BaseModule {
-  private readingInterval: any;
+  private intervalId: any;
 
   onStart() {
     this.log("Sensor module started");
 
-    // Simulate periodic sensor readings
-    this.readingInterval = setInterval(async () => {
-      const value = Math.random() * 100;
-      this.bus.publish("sensor.data", { 
-        type: "temperature", 
-        value: value.toFixed(2),
-        timestamp: Date.now()
+    // Use scheduler instead of raw setInterval
+    this.intervalId = this.scheduler.every(5000, () => {
+      const value = Number((Math.random() * 100).toFixed(2));
+      this.bus.publish("sensor.data", {
+        type: "temperature",
+        value,
+        timestamp: Date.now(),
       });
-    }, 5000);
+    });
   }
 
   onStop() {
     this.log("Sensor module stopped");
-    if (this.readingInterval) {
-      clearInterval(this.readingInterval);
-    }
+    if (this.intervalId) this.scheduler.clear(this.intervalId);
   }
 }
 
 /**
- * Main function
+ * Main
  */
 async function main() {
-  // Create runtime instance
   const runtime = new Runtime({
     logLevel: "info",
-    configPath: "./config.json"
+    configPath: "./config.json",
   });
 
-  // Register modules
   runtime.registerModule(new MotorModule("motor"));
   runtime.registerModule(new SensorModule("sensor"));
 
-  // Start the runtime
   await runtime.start();
 
   // Publish a test message
-  const bus = runtime.getMessageBus();
-  bus.publish("motor.speed.set", { value: 50 });
+  runtime.getMessageBus().publish("motor.speed.set", { value: 50 });
 
-  // Keep running for 10 seconds
   setTimeout(async () => {
     await runtime.stop();
     process.exit(0);
   }, 10000);
 }
 
-// Run the example
 main().catch(console.error);
