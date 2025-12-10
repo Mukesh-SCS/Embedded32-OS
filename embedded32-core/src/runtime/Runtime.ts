@@ -60,4 +60,20 @@ export class Runtime {
   isRunning() {
     return this.running;
   }
+
+  getMessageBus() {
+    return this.bus;
+  }
+
+  getScheduler() {
+    return this.scheduler;
+  }
+
+  getLogger() {
+    return this.logger;
+  }
+
+  getConfig() {
+    return this.config;
+  }
 }

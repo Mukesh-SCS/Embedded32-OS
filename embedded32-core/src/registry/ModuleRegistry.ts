@@ -11,7 +11,7 @@ export class ModuleRegistry {
   }
 
   getAll() {
-    return [...this.modules.values()];
+    return Array.from(this.modules.values());
   }
 
   async initAll() {
