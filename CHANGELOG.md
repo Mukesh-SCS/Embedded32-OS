@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README files for all components
 - Contributing guidelines
 - Development roadmap
+- **Comprehensive test suite for embedded32-core**:
+  - 84 tests across 6 test suites (100% pass rate)
+  - Logger tests: 11 tests covering log levels, history, and context support
+  - MessageBus tests: 7 tests for pub/sub functionality
+  - Scheduler tests: 11 tests for task scheduling and execution
+  - ModuleRegistry tests: 8 tests for module lifecycle management
+  - ConfigLoader tests: 23 tests for configuration file handling
+  - Runtime tests: 24 tests for runtime orchestration and module integration
+  - Jest and ts-jest configuration for TypeScript test support
 
 ### Changed
 - N/A
