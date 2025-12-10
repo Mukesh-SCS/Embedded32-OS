@@ -32,22 +32,20 @@ The embedded world is fragmented:
 
 ## 💡 Platform Identity
 
-**Embedded32** = A developer-first ecosystem for embedded networking
+**Embedded32** is a developer-first ecosystem for embedded networking.
 
 Think of it as:
 ```
-ROS2 + Zephyr + SocketCAN tools + Vector CANalyzer lite
-... but free, open, and simple
+ROS2 + Zephyr + SocketCAN tools + Vector CANalyzer
+... but free, open-source, and npm-installable
 ```
 
-### What You Get
-
-- ✅ **Lightweight OS runtime** (scheduler, messaging, module registry)
-- ✅ **Protocol stacks** (CAN/J1939, Ethernet, MQTT, Protobuf)
-- ✅ **Developer toolbox** (CLI + GUI monitoring tools)
-- ✅ **Device drivers** + board support layers
-- ✅ **Plugin system** for extensibility
-- ✅ **npm-installable packages** for rapid development
+**What you get:**
+- Lightweight runtime for embedded systems
+- CAN, J1939, Ethernet, MQTT protocol stacks
+- Professional CLI & GUI monitoring tools
+- Multi-language SDKs (C, JavaScript, Python)
+- Complete examples and documentation
 
 ---
 
@@ -207,46 +205,6 @@ Embedded32 runs on:
 | **STM32** | ✅ Full | C |
 | **ESP32** | 🚧 In Progress | C |
 | **Virtual/Simulation** | ✅ Full | All |
-
----
-
-## 🗺️ Development Roadmap
-
-### Phase 1 — Foundation (Weeks 1-6) 🚧 **In Progress**
-
-**Focus:** Minimum viable platform
-
-**Deliverables:**
-- ✅ Core runtime (scheduler, messaging, registry)
-- 🚧 CAN abstraction + SocketCAN driver
-- 🚧 J1939 stack (PGN, transport, diagnostics)
-- 🚧 Basic Ethernet + MQTT
-- 🚧 CLI tools (`j1939-monitor`, `can-snoop`)
-
-### Phase 2 — Platform (Weeks 7-14) 📋 **Planned**
-
-**Focus:** Modular platform with bridging
-
-**Deliverables:**
-- Plugin architecture
-- CAN ↔ Ethernet ↔ MQTT bridge
-- Real-time dashboard UI
-- JavaScript, Python, C SDKs
-
-### Phase 3 — Ecosystem (Weeks 15-30) 🌍 **Future**
-
-**Focus:** Production-ready ecosystem
-
-**Deliverables:**
-- Complete tutorials + documentation
-- Example projects:
-  - Raspberry Pi CAN Gateway
-  - STM32 Engine Simulator
-  - MQTT vehicle control
-- Cloud integration (OTA updates, remote logging)
-- Simulation layer (virtual CAN bus)
-
-**[View Full Roadmap →](./docs/roadmap.md)**
 
 ---
 

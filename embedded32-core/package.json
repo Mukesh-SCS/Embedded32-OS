@@ -22,6 +22,9 @@
   ],
   "author": "Mukesh Mani Tripathi",
   "license": "MIT",
+  "dependencies": {
+    "@embedded32/can": "0.1.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.0.0",
     "@types/node": "^20.0.0",
