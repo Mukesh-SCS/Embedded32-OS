@@ -1,0 +1,47 @@
+{
+  "name": "embedded32",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Embedded32 Platform - Monorepo workspace",
+  "type": "module",
+
+  "workspaces": [
+    "embedded32-core",
+    "embedded32-can",
+    "embedded32-j1939",
+    "embedded32-ethernet",
+    "embedded32-bridge",
+    "embedded32-tools",
+    "embedded32-dashboard",
+    "embedded32-sdk-js",
+    "embedded32-sdk-c",
+    "embedded32-sdk-python"
+  ],
+
+  "scripts": {
+    "build": "lerna run build",
+    "test": "lerna run test",
+    "clean": "lerna run clean",
+    "bootstrap": "lerna bootstrap",
+    "publish-packages": "lerna publish --yes"
+  },
+
+  "devDependencies": {
+    "lerna": "^8.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mukesh-SCS/Embedded32.git"
+  },
+
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
