@@ -1,0 +1,33 @@
+{
+  "name": "embedded32-bridge",
+  "version": "0.1.0",
+  "description": "CAN ↔ Ethernet ↔ MQTT routing and bridging",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "bridge",
+    "routing",
+    "can",
+    "mqtt",
+    "embedded32"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "dependencies": {
+    "embedded32-core": "^0.1.0",
+    "embedded32-can": "^0.1.0",
+    "embedded32-j1939": "^0.1.0",
+    "embedded32-ethernet": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

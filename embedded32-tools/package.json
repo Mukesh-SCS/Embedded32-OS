@@ -1,0 +1,40 @@
+{
+  "name": "embedded32-tools",
+  "version": "0.1.0",
+  "description": "CLI tools for CAN/J1939 monitoring, diagnostics, and device management",
+  "main": "dist/index.js",
+  "bin": {
+    "embedded32": "dist/cli.js",
+    "j1939-monitor": "dist/commands/j1939-monitor.js",
+    "j1939-send": "dist/commands/j1939-send.js",
+    "can-snoop": "dist/commands/can-snoop.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "cli",
+    "tools",
+    "j1939",
+    "can",
+    "monitoring",
+    "embedded32"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "dependencies": {
+    "embedded32-core": "^0.1.0",
+    "embedded32-can": "^0.1.0",
+    "embedded32-j1939": "^0.1.0",
+    "commander": "^11.0.0",
+    "chalk": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

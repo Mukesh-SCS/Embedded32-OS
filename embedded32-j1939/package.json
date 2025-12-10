@@ -1,0 +1,31 @@
+{
+  "name": "embedded32-j1939",
+  "version": "0.1.0",
+  "description": "SAE J1939 protocol stack - PGN/SPN encoding, transport protocol, diagnostics",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "j1939",
+    "pgn",
+    "spn",
+    "automotive",
+    "embedded32"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "dependencies": {
+    "embedded32-core": "^0.1.0",
+    "embedded32-can": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "embedded32-can",
+  "version": "0.1.0",
+  "description": "CAN hardware abstraction layer and drivers for Embedded32 platform",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "can",
+    "socketcan",
+    "mcp2515",
+    "stm32",
+    "embedded32"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "dependencies": {
+    "embedded32-core": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0"
+  }
+}
