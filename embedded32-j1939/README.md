@@ -280,38 +280,4 @@ Current database includes:
 
 ## License
 
-MIT © Mukesh Mani Tripathi
-  interface: 'can0',
-  address: 0x80,
-  name: 0x0123456789ABCDEF
-});
-
-// Decode incoming PGN
-j1939.on('pgn', (message) => {
-  console.log(`PGN: ${message.pgn}`);
-  console.log(`Source: ${message.source}`);
-  console.log(`Data:`, message.spns);
-});
-
-// Send a PGN
-await j1939.send({
-  pgn: 61444, // Engine Speed
-  priority: 3,
-  data: {
-    engineSpeed: 1500 // RPM
-  }
-});
-```
-
-## Phase 1 Deliverables (Weeks 3-5)
-
-- [ ] PGN encoder/decoder
-- [ ] Basic SPN extraction
-- [ ] Transport Protocol (BAM)
-- [ ] Transport Protocol (RTS/CTS)
-- [ ] Address Claim
-- [ ] DM1 diagnostic support
-
-## License
-
-MIT © Mukesh Mani Tripathi
+MIT © Mukesh Mani Tripathi 
