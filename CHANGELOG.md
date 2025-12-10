@@ -40,6 +40,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - N/A
 
+## [0.2.0] - 2025-12-09
+
+### Added
+- **embedded32-core** full implementation:
+  - Runtime class with module lifecycle management
+  - Logger with log levels (debug, info, warn, error) and history tracking
+  - MessageBus with publish/subscribe event system for inter-module communication
+  - Scheduler for priority-based task management
+  - ModuleRegistry for module registration and lifecycle control
+  - ConfigLoader for JSON configuration file management with get/set utilities
+  - Comprehensive TypeScript type definitions (Module, MessageHandler, Task, LogEntry, etc.)
+  - Basic runtime example demonstrating motor and sensor modules with pub/sub messaging
+- Monorepo workspace configuration with proper package dependencies
+- .gitignore updates to exclude build artifacts, node_modules, and dist directories
+- TypeScript compilation support with tsconfig configuration
+
+### Changed
+- Updated package.json to use @embedded32/core naming convention
+- Fixed monorepo package.json dependencies to use workspace references
+- Refactored module lifecycle methods for consistency
+
+### Fixed
+- Resolved TypeScript compilation errors
+- Fixed import paths for proper ES module support
+- Corrected package naming for npm compatibility
+
 ## [0.1.0] - 2025-12-09
 
 ### Added
