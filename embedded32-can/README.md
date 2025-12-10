@@ -17,6 +17,10 @@ This package provides a clean and modern TypeScript interface for sending and re
 npm install @embedded32/can
 ```
 
+> **Platform Support:**  
+> - Linux / Raspberry Pi / WSL → full SocketCAN support  
+> - macOS / Windows → use MockCANDriver or upcoming USB-CAN drivers
+
 ## Quick Start
 
 ### Using SocketCAN (Linux / Raspberry Pi)
@@ -45,6 +49,25 @@ can.close();
 
 > **Note:** SocketCAN is only available on Linux-based systems.
 
+> **Error Handling:**  
+> SocketCAN operations may throw if:
+> - the interface (e.g., `can0`) does not exist,
+> - you lack permissions (`sudo` required), or
+> - the bus is in an error/passive/off state.
+> 
+> Always wrap driver creation in try/catch when deploying:
+
+```typescript
+let can: CANInterface;
+
+try {
+  can = new CANInterface(new SocketCANDriver("can0"));
+} catch (err) {
+  console.error("Failed to initialize CAN:", err);
+  process.exit(1);
+}
+```
+
 ### Using MockCANDriver (testing & simulation)
 
 ```typescript
@@ -61,6 +84,9 @@ can.send({
 ```
 
 > The MockCANDriver echoes every frame sent, making it ideal for unit tests.
+
+> **Tip:** The MockCANDriver is fully cross-platform and runs on Windows, macOS, Linux, and CI systems.  
+> Use it when developing on machines that do *not* support SocketCAN.
 
 ### Creating a Custom Driver
 
@@ -185,6 +211,91 @@ export class CANGateway extends BaseModule {
     this.can.close();
   }
 }
+```
+
+## Examples
+
+Working examples are in the `examples/` folder:
+
+### 1. Basic Mock Example
+```bash
+npm run build
+node dist/examples/basic-mock.js
+```
+
+Demonstrates:
+- Using MockCANDriver
+- Sending and receiving frames
+- Message handlers
+
+### 2. SocketCAN Demo
+```bash
+npm run build
+node dist/examples/socketcan-demo.js
+```
+
+Demonstrates:
+- Real SocketCAN interface
+- Error handling for missing interfaces
+- Sending OBD-II diagnostic frames
+
+**Setup virtual CAN first:**
+```bash
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+```
+
+### 3. Custom Driver Example
+```bash
+npm run build
+node dist/examples/custom-driver.js
+```
+
+Demonstrates:
+- Implementing a custom ICANDriver
+- Creating a logging wrapper around existing drivers
+- Extending base functionality
+
+## Testing
+
+Basic tests are included in `tests/`:
+
+```bash
+npm test
+```
+
+Currently includes:
+- MockCANDriver send/receive tests
+- Standard and extended frame support
+- Multiple listener handling
+- Timestamp validation
+- CANFrame validation
+
+To set up full testing with Jest:
+
+```bash
+npm install --save-dev jest @types/jest ts-jest
+```
+
+Update `package.json`:
+```json
+{
+  "scripts": {
+    "test": "jest"
+  }
+}
+```
+
+Create `jest.config.js`:
+```javascript
+export default {
+  preset: "ts-jest",
+  testEnvironment: "node",
+  testMatch: ["**/tests/**/*.test.ts"],
+  moduleNameMapper: {
+    "^(\\.{1,2}/.*)\\.js$": "$1"
+  }
+};
 ```
 
 ## Roadmap
