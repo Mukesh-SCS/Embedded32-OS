@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { sendCommand } from '../services/ws';
 
 const ECUSimulatorControls: React.FC = () => {
   const [engineRunning, setEngineRunning] = useState(false);
@@ -7,27 +8,37 @@ const ECUSimulatorControls: React.FC = () => {
 
   const startEngine = () => {
     setEngineRunning(true);
-    // TODO: Send WebSocket message to start engine simulation
+    sendCommand({ type: 'command', target: 'engine', action: 'start' });
     console.log('Starting engine...');
   };
 
   const stopEngine = () => {
     setEngineRunning(false);
     setRpm(0);
-    // TODO: Send WebSocket message to stop engine simulation
+    sendCommand({ type: 'command', target: 'engine', action: 'stop' });
     console.log('Stopping engine...');
   };
 
   const toggleFault = () => {
-    setFaultActive(!faultActive);
-    // TODO: Send WebSocket message to toggle DM1 fault
-    console.log('Toggling fault:', !faultActive);
+    const newFaultState = !faultActive;
+    setFaultActive(newFaultState);
+    if (newFaultState) {
+      sendCommand({ 
+        type: 'j1939.dm1.inject', 
+        spn: 102, 
+        fmi: 1,
+        description: 'Turbocharger Speed Low'
+      });
+    } else {
+      sendCommand({ type: 'j1939.dm1.clear' });
+    }
+    console.log('Toggling fault:', newFaultState);
   };
 
   const adjustRpm = (delta: number) => {
     const newRpm = Math.max(0, Math.min(3000, rpm + delta));
     setRpm(newRpm);
-    // TODO: Send WebSocket message to adjust RPM
+    sendCommand({ type: 'engine.rpm.adjust', amount: delta, targetRpm: newRpm });
     console.log('Adjusting RPM to:', newRpm);
   };
 
@@ -139,12 +150,13 @@ const ECUSimulatorControls: React.FC = () => {
       <div style={{ 
         marginTop: 16, 
         padding: 12, 
-        background: '#fff3cd', 
+        background: '#d4edda', 
         borderRadius: 4,
         fontSize: 12,
-        color: '#856404'
+        color: '#155724',
+        borderLeft: '4px solid #28a745'
       }}>
-        <strong>Note:</strong> These controls will send commands to the WebSocket bridge when fully integrated.
+        <strong>✅ Controls Active:</strong> Commands are being sent to the WebSocket bridge.
       </div>
     </div>
   );

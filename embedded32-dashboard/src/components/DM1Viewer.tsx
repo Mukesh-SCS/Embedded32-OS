@@ -3,12 +3,22 @@ import { useDashboard } from '../hooks/useDashboardState';
 
 const DM1Viewer: React.FC = () => {
   const { state } = useDashboard();
-  const faults = state.messages.filter(msg => msg.type === 'dm1');
+  const faults = state.dm1Faults || [];
+
+  console.log('DM1Viewer rendering with faults:', faults);
 
   const getSeverityColor = (fmi: number) => {
-    if (fmi === 0) return '#4caf50'; // Green
-    if (fmi === 1) return '#ff9800'; // Yellow
-    return '#f44336'; // Red
+    if (fmi === 0) return '#f44336'; // Red - High severity
+    if (fmi === 1) return '#ff9800'; // Orange - Medium
+    if (fmi === 3) return '#ffeb3b'; // Yellow - Low
+    return '#9e9e9e'; // Gray - Unknown
+  };
+
+  const getSeverityLabel = (fmi: number) => {
+    if (fmi === 0) return 'High';
+    if (fmi === 1) return 'Medium';
+    if (fmi === 3) return 'Low';
+    return 'Unknown';
   };
 
   return (
@@ -25,29 +35,30 @@ const DM1Viewer: React.FC = () => {
               <th>Severity</th>
               <th>Description</th>
               <th>Count</th>
-              <th>Timestamp</th>
+              <th>Occurrence</th>
             </tr>
           </thead>
           <tbody>
-            {faults.map((msg, idx) => (
-              <tr key={idx} style={{ borderLeft: `4px solid ${getSeverityColor(msg.parameters.fmi)}` }}>
-                <td>{msg.parameters.spn}</td>
-                <td>{msg.parameters.fmi}</td>
+            {faults.map((fault, idx) => (
+              <tr key={idx} style={{ borderLeft: `4px solid ${getSeverityColor(fault.fmi)}` }}>
+                <td><strong>{fault.spn}</strong></td>
+                <td>{fault.fmi}</td>
                 <td>
-                  <span style={{ 
+                  <span className={`severity severity-${fault.fmi}`} style={{ 
                     padding: '2px 8px', 
                     borderRadius: 4, 
-                    background: getSeverityColor(msg.parameters.fmi),
-                    color: 'white',
+                    background: getSeverityColor(fault.fmi),
+                    color: fault.fmi === 3 ? '#000' : 'white',
                     fontSize: 11,
-                    fontWeight: 500
+                    fontWeight: 500,
+                    display: 'inline-block'
                   }}>
-                    {msg.parameters.fmi === 0 ? 'Low' : msg.parameters.fmi === 1 ? 'Medium' : 'High'}
+                    {getSeverityLabel(fault.fmi)}
                   </span>
                 </td>
-                <td>{msg.parameters.description || '-'}</td>
-                <td>{msg.parameters.count || 1}</td>
-                <td>{new Date(msg.timestamp * 1000).toLocaleTimeString()}</td>
+                <td style={{ fontWeight: 500 }}>{fault.description || '-'}</td>
+                <td>{fault.count || 1}</td>
+                <td>{fault.occurrence || 1}</td>
               </tr>
             ))}
           </tbody>

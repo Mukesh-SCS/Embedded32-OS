@@ -8,12 +8,29 @@ const ConnectionManager: React.FC = () => {
 
   const connect = () => {
     connectWS(url, (msg) => {
-      if (msg.type === 'j1939') {
-        dispatch({ type: 'ADD_J1939_MESSAGE', message: msg });
-      } else if (msg.type === 'can') {
-        dispatch({ type: 'ADD_CAN_FRAME', frame: msg });
-      } else if (msg.type === 'dm1') {
-        dispatch({ type: 'ADD_J1939_MESSAGE', message: msg });
+      console.log('Dashboard received message:', msg);
+      
+      try {
+        if (msg.type === 'j1939') {
+          dispatch({ type: 'ADD_J1939_MESSAGE', message: msg });
+        } else if (msg.type === 'can') {
+          dispatch({ type: 'ADD_CAN_FRAME', frame: msg });
+        } else if (msg.type === 'dm1' || msg.type === 'j1939.dm1') {
+          // Handle DM1 fault messages - don't add to regular messages
+          console.log('Received DM1 message with faults:', msg.faults);
+          if (msg.faults && Array.isArray(msg.faults)) {
+            console.log('Dispatching DM1 faults:', msg.faults);
+            dispatch({ type: 'SET_DM1_FAULTS', faults: msg.faults });
+          }
+        } else if (msg.type === 'stats') {
+          // Handle bus statistics
+          dispatch({ type: 'UPDATE_BUS_STATS', stats: { 
+            framesPerSec: msg.fps || 0, 
+            busLoad: msg.load || 0 
+          }});
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error, msg);
       }
     });
     dispatch({ type: 'SET_CONNECTED', value: true });

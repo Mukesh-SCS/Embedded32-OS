@@ -8,13 +8,17 @@ import EngineChart from './components/EngineChart';
 import DM1Viewer from './components/DM1Viewer';
 import CANFrameList from './components/CANFrameList';
 import ECUSimulatorControls from './components/ECUSimulatorControls';
+import PGNDetailsPanel from './components/PGNDetailsPanel';
+import LogRecorder from './components/LogRecorder';
+import ErrorBoundary from './components/ErrorBoundary';
 import { DashboardProvider } from './hooks/useDashboardState';
 import './styles/global.css';
 import './styles/App.css';
 
 const App: React.FC = () => (
-  <DashboardProvider>
-    <div className="app-container">
+  <ErrorBoundary>
+    <DashboardProvider>
+      <div className="app-container">
       <div className="header-row">
         <ConnectionManager />
         <div style={{ display: 'flex', gap: 16, flex: 1 }}>
@@ -25,6 +29,10 @@ const App: React.FC = () => (
       
       <div className="section" style={{ gridColumn: 'span 2' }}>
         <BusLoadIndicator />
+      </div>
+
+      <div className="section" style={{ gridColumn: 'span 2' }}>
+        <LogRecorder />
       </div>
       
       <div className="section">
@@ -46,8 +54,11 @@ const App: React.FC = () => (
       <div className="section" style={{ gridColumn: 'span 2' }}>
         <CANFrameList />
       </div>
+
+      <PGNDetailsPanel />
     </div>
-  </DashboardProvider>
+    </DashboardProvider>
+  </ErrorBoundary>
 );
 
 export default App;
