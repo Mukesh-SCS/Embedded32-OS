@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "packages": [
+    "embedded32-core",
+    "embedded32-can",
+    "embedded32-j1939",
+    "embedded32-sim",
+    "embedded32-tools",
+    "embedded32-bridge",
+    "embedded32-ethernet",
+    "embedded32-sdk-js",
+    "embedded32-sdk-c",
+    "embedded32-sdk-python",
+    "embedded32-dashboard"
+  ],
+  "npmClient": "npm",
+  "command": {
+    "build": {
+      "args": ["--source-maps"]
+    },
+    "version": {
+      "allowBranch": "main"
+    }
+  }
+}
