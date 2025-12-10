@@ -44,6 +44,15 @@ export class Runtime {
    */
   registerModule(module: Module): void {
     this.logger.info(`Registering module: ${module.name}`);
+    
+    // Bind module context
+    module.bind({
+      logger: this.logger,
+      bus: this.messageBus,
+      scheduler: this.scheduler,
+      config: {},
+    });
+    
     this.registry.register(module);
   }
 
@@ -61,6 +70,9 @@ export class Runtime {
 
     // Initialize all registered modules
     await this.registry.initAll();
+
+    // Start all registered modules
+    await this.registry.startAll();
 
     // Start scheduler
     this.scheduler.start();

@@ -64,9 +64,23 @@ export class Logger {
       this.history.shift();
     }
 
-    // Console output
+    // Console output - use appropriate console method by level
     const prefix = `[${new Date().toISOString()}] [${level.toUpperCase()}]`;
-    console.log(`${prefix} ${message}`, context || '');
+    const output = `${prefix} ${message}`;
+    
+    switch (level) {
+      case 'error':
+        console.error(output, context || '');
+        break;
+      case 'warn':
+        console.warn(output, context || '');
+        break;
+      case 'debug':
+        console.debug(output, context || '');
+        break;
+      default:
+        console.log(output, context || '');
+    }
   }
 
   /**
