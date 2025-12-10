@@ -1,0 +1,30 @@
+# Development files
+src/
+examples/
+tests/
+tsconfig.json
+jest.config.js
+README_v0.1.md
+
+# Git
+.git
+.gitignore
+.github
+
+# Node modules
+node_modules/
+npm-debug.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts (keep dist/)
+*.tsbuildinfo

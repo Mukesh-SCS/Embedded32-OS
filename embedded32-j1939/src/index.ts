@@ -26,6 +26,19 @@ export {
   type DecodedJ1939Message,
 } from "./pgn/PGNDecoder.js";
 
+// SPN (Suspect Parameter Number) Decoder
+export {
+  getSPNInfo,
+  getAllSPNs,
+  decodeSPNValue,
+  decodeSPNsFromFrame,
+  validateSPNValue,
+  formatSPNValue,
+  describeFMI,
+  type SPNInfo,
+  type DecodedSPNValue,
+} from "./spn/SPNDecoder.js";
+
 // Transport Protocol
 export {
   J1939TransportProtocol,
