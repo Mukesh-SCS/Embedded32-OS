@@ -1,5 +1,5 @@
 {
-  "name": "@embedded32-core",
+  "name": "@embedded32/core",
   "version": "0.1.0",
   "description": "Lightweight OS runtime for Embedded32 platform - scheduler, messaging, module registry",
   "main": "dist/index.js",

@@ -19,7 +19,7 @@
   "author": "Mukesh Mani Tripathi",
   "license": "MIT",
   "dependencies": {
-    "embedded32-core": "^0.1.0",
+    "@embedded32/core": "*",
     "embedded32-can": "^0.1.0"
   },
   "devDependencies": {

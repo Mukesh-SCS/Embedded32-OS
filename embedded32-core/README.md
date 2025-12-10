@@ -6,6 +6,8 @@
 
 The core runtime provides the foundation for all Embedded32 modules:
 
+Core responsibilities:
+
 - **Task Scheduler** - Cooperative task scheduling
 - **Message Bus** - Inter-module communication (IPC)
 - **Module Registry** - Dynamic module loading and management
@@ -24,41 +26,105 @@ npm install embedded32-core
 ```
 embedded32-core/
 ├── src/
+│   ├── runtime/        # Runtime orchestrator
+│   ├── modules/        # Module base class
 │   ├── scheduler/      # Task scheduler
-│   ├── messaging/      # Message bus (IPC)
+│   ├── messaging/      # Message bus
 │   ├── registry/       # Module registry
 │   ├── logger/         # Logging system
-│   ├── config/         # Configuration loader
-│   └── memory/         # Memory management
+│   ├── config/         # Config loader
+│   └── memory/         # Memory utilities
 ├── tests/
 └── examples/
 ```
 
 ## Quick Start
 
-```typescript
-import { Runtime, Module } from 'embedded32-core';
+### 1. Creating a Runtime
 
-// Create runtime instance
+```typescript
+import { Runtime } from 'embedded32-core';
+
 const runtime = new Runtime({
   logLevel: 'info',
   configPath: './config.json'
 });
 
-// Register a module
-runtime.registerModule(new MyCustomModule());
-
-// Start the runtime
 await runtime.start();
 ```
 
-## Phase 1 Deliverables (Weeks 1-2)
+### 2. Creating a Custom Module
 
-- [x] Basic task scheduler
-- [ ] Message bus implementation
-- [ ] Module registry system
-- [ ] Logger with multiple levels
-- [ ] JSON config loader
+```typescript
+import { Module } from 'embedded32-core';
+
+class MotorModule extends Module {
+  onInit() {
+    this.log('Motor module initialized');
+  }
+
+  onStart() {
+    this.log('Motor module started');
+    
+    // Listen to messages
+    this.bus.subscribe('motor.speed.set', (payload) => {
+      this.log('Setting speed:', payload.value);
+    });
+  }
+
+  onStop() {
+    this.log('Motor module stopped');
+  }
+}
+```
+
+### 3. Registering Modules
+
+```typescript
+runtime.registerModule(new MotorModule({ name: 'motor' }));
+await runtime.start();
+```
+
+## Core Concepts
+
+### Runtime
+
+Handles module initialization, scheduling, shutdown, logging, and IPC wiring.
+
+### Modules
+
+Each module implements lifecycle hooks:
+- `onInit()` - Setup
+- `onStart()` - Execution
+- `onStop()` - Cleanup
+
+### Message Bus
+
+Publish or subscribe to events:
+
+```typescript
+bus.publish('system.ready');
+bus.subscribe('sensor.data', handler);
+```
+
+### Scheduler
+
+Run periodic tasks:
+
+```typescript
+scheduler.every(1000, () => console.log('Tick'));
+```
+
+### Logger
+
+Structured logging:
+
+```typescript
+logger.info('Information');
+logger.warn('Warning');
+logger.error('Error');
+logger.debug('Debug');
+```
 
 ## License
 

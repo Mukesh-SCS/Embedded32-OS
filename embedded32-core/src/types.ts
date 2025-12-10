@@ -1,25 +1,29 @@
 /**
- * Type definitions for Embedded32 Core
+ * Embedded32 Core Types
  */
 
 export interface RuntimeConfig {
-  logLevel: 'debug' | 'info' | 'warn' | 'error';
+  logLevel: "debug" | "info" | "warn" | "error";
   configPath?: string;
   enableMetrics?: boolean;
+}
+
+export interface ModuleContext {
+  logger: any;
+  bus: any;
+  scheduler: any;
+  config: any;
 }
 
 export interface Module {
   name: string;
   version: string;
-  initialize(): Promise<void>;
-  shutdown(): Promise<void>;
-}
 
-export interface Task {
-  id: string;
-  name: string;
-  priority: number;
-  execute(): Promise<void>;
+  bind(context: ModuleContext): void;
+
+  onInit(): Promise<void> | void;
+  onStart(): Promise<void> | void;
+  onStop(): Promise<void> | void;
 }
 
 export interface Message {
@@ -32,8 +36,15 @@ export interface Message {
 export type MessageHandler = (message: Message) => void | Promise<void>;
 
 export interface LogEntry {
-  level: 'debug' | 'info' | 'warn' | 'error';
+  level: "debug" | "info" | "warn" | "error";
   message: string;
   timestamp: number;
   context?: any;
+}
+
+export interface Task {
+  id: string;
+  name: string;
+  priority: number;
+  execute(): Promise<void>;
 }

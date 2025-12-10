@@ -60,7 +60,7 @@ export class Runtime {
     }
 
     // Initialize all registered modules
-    await this.registry.initializeAll();
+    await this.registry.initAll();
 
     // Start scheduler
     this.scheduler.start();
@@ -76,7 +76,7 @@ export class Runtime {
     this.logger.info('Stopping Embedded32 Runtime...');
     
     this.scheduler.stop();
-    await this.registry.shutdownAll();
+    await this.registry.stopAll();
     this.running = false;
 
     this.logger.info('Runtime stopped');

@@ -36,9 +36,19 @@ export class ModuleRegistry {
   /**
    * Initialize all registered modules
    */
-  async initializeAll(): Promise<void> {
+  async initAll(): Promise<void> {
     const promises = Array.from(this.modules.values()).map(module =>
-      module.initialize()
+      Promise.resolve(module.onInit())
+    );
+    await Promise.all(promises);
+  }
+
+  /**
+   * Start all registered modules
+   */
+  async startAll(): Promise<void> {
+    const promises = Array.from(this.modules.values()).map(module =>
+      Promise.resolve(module.onStart())
     );
     await Promise.all(promises);
   }
@@ -46,9 +56,9 @@ export class ModuleRegistry {
   /**
    * Shutdown all registered modules
    */
-  async shutdownAll(): Promise<void> {
+  async stopAll(): Promise<void> {
     const promises = Array.from(this.modules.values()).map(module =>
-      module.shutdown()
+      Promise.resolve(module.onStop())
     );
     await Promise.all(promises);
   }
