@@ -8,6 +8,7 @@ import { CANMonitorCommand } from "./commands/CANMonitorCommand.js";
 import { J1939SendCommand } from "./commands/J1939SendCommand.js";
 import { J1939DumpCommand } from "./commands/J1939DumpCommand.js";
 import { ECUSimulateCommand } from "./commands/ECUSimulateCommand.js";
+import DashboardBridgeCommand from "./commands/DashboardBridgeCommand.js";
 import type { BaseCommand } from "./commands/BaseCommand.js";
 
 const VERSION = "0.1.0";
@@ -35,6 +36,9 @@ Main Commands:
     
   ecu                    ECU simulation
     ecu simulate         Run virtual ECUs (engine, transmission, aftertreatment)
+
+  dashboard              Dashboard utilities
+    dashboard bridge     Start WebSocket bridge for dashboard UI
 
   help, --help, -h       Show this help message
   --version              Show version
@@ -118,6 +122,12 @@ async function main() {
       cmd = new J1939DumpCommand();
     } else if (command === "ecu" && subcommand === "simulate") {
       cmd = new ECUSimulateCommand();
+    } else if (command === "dashboard" && subcommand === "bridge") {
+      // Handle dashboard bridge command separately since it uses commander
+      // Skip the first args (node, script, dashboard, bridge)
+      const bridgeArgs = ['node', 'script', ...cmdArgs];
+      DashboardBridgeCommand.parse(bridgeArgs);
+      return;
     } else {
       console.error(`Unknown command: ${command} ${subcommand || ""}`);
       console.error("\nUse 'embedded32 help' for usage information.");
