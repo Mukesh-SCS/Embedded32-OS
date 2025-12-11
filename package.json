@@ -11,8 +11,10 @@
     "embedded32-j1939",
     "embedded32-ethernet",
     "embedded32-bridge",
+    "embedded32-sim",
     "embedded32-tools",
-    "embedded32-dashboard",
+    "embedded32-supervisor",
+    "embedded32-cli",
     "embedded32-sdk-js",
     "embedded32-sdk-c",
     "embedded32-sdk-python"

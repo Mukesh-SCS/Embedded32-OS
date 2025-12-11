@@ -1,0 +1,37 @@
+# Development files
+src/
+examples/
+tests/
+tsconfig.json
+*.ts
+*.map
+
+# Build outputs
+dist/**/*.d.ts.map
+
+# Node modules
+node_modules/
+
+# IDE & Environment
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env
+.env.local
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Package manager lock files
+yarn.lock
+package-lock.json
+
+# Misc
+README.md
+LICENSE
+.npmignore

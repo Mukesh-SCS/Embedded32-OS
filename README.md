@@ -1,4 +1,5 @@
-# Embedded32 Platform  
+# Embedded32 Platform
+
 **A unified, open-source platform for embedded communication systems**
 
 > CAN + J1939 + Ethernet + MQTT + Developer Tools — All in one ecosystem
@@ -9,7 +10,19 @@ Embedded32 provides a complete runtime, protocol stacks, developer tools, and SD
 
 ---
 
-## 🎯 The Problem We're Solving
+## 📋 Table of Contents
+
+- [The Problem](#the-problem)
+- [Platform Architecture](#platform-architecture)
+- [Core Features](#core-features)
+- [Getting Started](#getting-started)
+- [Hardware Support](#hardware-support)
+- [Why Embedded32](#why-embedded32)
+- [Contributing](#contributing)
+
+---
+
+## 🎯 The Problem
 
 The embedded world is fragmented:
 
@@ -17,148 +30,158 @@ The embedded world is fragmented:
 - **Robotics frameworks** are powerful but complex (ROS2)
 - **Microcontroller frameworks** lack integrated networking (Arduino, ESP-IDF, STM32Cube)
 
-**There's no open platform where:**
-- CAN & J1939
-- Ethernet & MQTT
-- OS runtime
-- Developer tools
-- Learning resources
-
-**All work together** and are installable as npm packages.
+**There's no open platform where CAN, J1939, Ethernet, MQTT, runtime, tools, and SDKs all work together** and are installable as npm packages.
 
 **Embedded32 fills that gap.**
 
 ---
 
-## 💡 Platform Identity
+## 💡 Platform Architecture
 
-**Embedded32** is a developer-first ecosystem for embedded networking.
-
-Think of it as:
-```
-ROS2 + Zephyr + SocketCAN tools + Vector CANalyzer
-... but free, open-source, and npm-installable
-```
-
-**What you get:**
-- Lightweight runtime for embedded systems
-- CAN, J1939, Ethernet, MQTT protocol stacks
-- Professional CLI & GUI monitoring tools
-- Multi-language SDKs (C, JavaScript, Python)
-- Complete examples and documentation
-
----
-
-## 📦 Platform Architecture
-
-Embedded32 is organized into independent, composable repositories:
+Embedded32 is organized into independent, composable packages:
 
 ```
 embedded32/
+├── RUNTIME & ORCHESTRATION
+│   ├── embedded32-supervisor/     → Module lifecycle & health monitoring
+│   ├── embedded32-cli/            → CLI launcher & plugin system
+│   └── embedded32-core/           → OS runtime (scheduler, messaging, registry)
 │
-├── embedded32-core/          → OS runtime (scheduler, messaging, registry)
-├── embedded32-can/           → CAN HAL, drivers, abstraction  
-├── embedded32-j1939/         → J1939 protocol stack
-├── embedded32-ethernet/      → Ethernet, UDP/TCP, MQTT, ProtoLite
-├── embedded32-bridge/        → CAN ↔ Ethernet ↔ MQTT routing
-├── embedded32-tools/         → CLI tools (monitor, send, diagnose)
-├── embedded32-dashboard/     → Web dashboard (React + WebSocket)
+├── PROTOCOL STACKS
+│   ├── embedded32-can/            → CAN HAL, drivers, abstraction  
+│   ├── embedded32-j1939/          → J1939 protocol stack & PGN database
+│   └── embedded32-ethernet/       → Ethernet, UDP/TCP, MQTT
 │
-├── embedded32-sdk-c/         → C SDK for MCU integration
-├── embedded32-sdk-js/        → JavaScript/TypeScript SDK
-├── embedded32-sdk-python/    → Python SDK for automation
+├── INTEGRATION & TOOLS
+│   ├── embedded32-bridge/         → CAN ↔ Ethernet ↔ MQTT routing
+│   ├── embedded32-sim/            → Vehicle simulator
+│   ├── embedded32-tools/          → CLI tools for monitoring & diagnostics
+│   └── embedded32-dashboard/      → Web dashboard
 │
-├── examples/                 → Working projects and tutorials
-└── docs/                     → Platform documentation
+├── MULTI-LANGUAGE SDKs
+│   ├── embedded32-sdk-c/          → C SDK for MCU
+│   ├── embedded32-sdk-js/         → JavaScript SDK
+│   └── embedded32-sdk-python/     → Python SDK
+│
+└── DOCUMENTATION & EXAMPLES
+    ├── docs/                      → Guides & architecture
+    ├── examples/                  → Working code samples
+    └── embedded32.yaml            → Configuration template
 ```
 
-**Each component** can be used standalone or as part of the full platform.
+Each component works **standalone or integrated** under a unified supervisor.
 
 ---
 
 ## 🚀 Core Features
 
-### 1️⃣ OS Runtime (`embedded32-core`)
-Lightweight modular runtime:
-- Task scheduler (cooperative multitasking)
-- Inter-module message bus
-- Dynamic module registry
-- Logging and debug utilities
-- JSON configuration loading
+### 1. Runtime Supervisor (`embedded32-supervisor`)
+- Module registration and lifecycle management
+- Health monitoring with auto-restart
+- Graceful shutdown and signal handling
+- Event-driven architecture
+- Real-time status and diagnostics
 
-### 2️⃣ CAN Support (`embedded32-can`)
-Hardware-agnostic CAN interface:
-- **SocketCAN** backend (Linux, Raspberry Pi)
-- **STM32 HAL** and **MCP2515** support
-- **PCAN** hardware support
-- Frame filters, queues, and diagnostics
-- Bus statistics and error handling
+### 2. CLI Launcher (`embedded32-cli`)
+- One-command platform startup: `embedded32 start`
+- Zero-config demo mode: `embedded32 demo`
+- Unified YAML configuration system
+- Plugin management: `embedded32 add <plugin>`
+- Configuration initialization: `embedded32 init`
+- Health status: `embedded32 status`
 
-### 3️⃣ J1939 Stack (`embedded32-j1939`)
-Complete SAE J1939 implementation:
-- **PGN/SPN** encode & decode
-- **Address Claim** procedure
-- **Transport Protocol** (BAM + RTS/CTS)
-- **Diagnostics** (DM1, DM2, DM3, etc.)
-- 500+ standard PGNs in database
+### 3. Runtime (`embedded32-core`)
+- Task scheduler
+- Message bus
+- Module registry
+- Logging utilities
 
-### 4️⃣ Ethernet Layer (`embedded32-ethernet`)
-Network communication:
-- UDP and TCP messaging
+### 4. CAN Support (`embedded32-can`)
+- **SocketCAN** (Linux, Raspberry Pi)
+- **STM32 HAL** and **MCP2515**
+- **PCAN** hardware
+- Filters, queues, diagnostics
+
+### 5. J1939 Stack (`embedded32-j1939`)
+- Complete SAE J1939 implementation
+- 500+ standard PGNs
+- Address Claim procedure
+- Transport Protocol (BAM, RTS/CTS)
+- Diagnostics (DM1-DM10)
+
+### 6. Networking (`embedded32-ethernet`)
+- UDP/TCP messaging
 - MQTT client (QoS 0/1/2)
-- Lightweight **ProtoLite** serializer
-- JSON message encoding
 - WebSocket support
+- JSON encoding
 
-### 5️⃣ Bridging & Routing (`embedded32-bridge`)
-Route messages between protocols:
-- **CAN → Ethernet** forwarding
-- **Ethernet → CAN** injection
-- **J1939 → MQTT** topic mapping
-- Configurable filters and transforms
+### 7. Bridging (`embedded32-bridge`)
+- CAN ↔ Ethernet forwarding
+- J1939 ↔ MQTT mapping
+- Configurable routing
+- Rate limiting and filtering
 
-### 6️⃣ Developer Tools (`embedded32-tools`)
-Professional CLI toolkit:
-```bash
-j1939-monitor --iface can0        # Real-time J1939 viewer
-j1939-send --pgn 61444 ...        # Send J1939 messages
-can-snoop --filter 0x18FEF100     # Low-level CAN inspection
-embedded32 devices                # Device discovery
-embedded32 bridge --config ...    # Launch bridge
-```
-
-### 7️⃣ Multi-Language SDKs
-- **C SDK** → For STM32, ESP32, Raspberry Pi firmware
-- **JavaScript SDK** → For Node.js automation and cloud integration
-- **Python SDK** → For scripting, testing, and data analysis
-
-### 8️⃣ Dashboard (`embedded32-dashboard`)
-Browser-based monitoring:
-- Real-time CAN/J1939 monitoring
-- PGN/SPN explorer
-- Network topology visualization
-- Session logging and replay  
+### 8. Multi-Language SDKs
+- **C** — For STM32, ESP32, firmware
+- **JavaScript** — For Node.js automation
+- **Python** — For scripting and testing
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Getting Started
 
-### Install CLI Tools
+### Installation
+
 ```bash
-npm install -g embedded32-tools
+# Clone repository
+git clone https://github.com/Mukesh-SCS/Embedded32.git
+cd Embedded32
+
+# Install all packages
+npm install
+
+# Link CLI globally (optional)
+npm link
 ```
 
-### Monitor J1939 Traffic
+### Quick Start (Zero-Config Demo)
+
 ```bash
-embedded32 j1939-monitor --iface can0
+# Start complete platform with all systems running
+embedded32 demo
+
+# Opens dashboard at http://localhost:5173
+# Simulates engine data automatically
+# All modules (CAN, J1939, Ethernet, Bridge, Dashboard) enabled
 ```
 
-### Bridge CAN to MQTT
+### Start with Configuration
+
 ```bash
-embedded32 bridge --from can0 --to mqtt://localhost:1883
+# Initialize new configuration
+embedded32 init
+
+# This creates embedded32.yaml with all options
+
+# Start with custom config
+embedded32 start --config embedded32.yaml
+
+# Check platform health
+embedded32 status
 ```
 
-### Use the JavaScript SDK
+### Monitor Real CAN Traffic
+
+```bash
+# Linux/Raspberry Pi
+embedded32 j1939 monitor --iface can0
+
+# Windows PCAN adapter
+embedded32 j1939 monitor --iface PCAN-USB
+```
+
+### JavaScript Integration
+
 ```bash
 npm install embedded32-sdk-js
 ```
@@ -175,7 +198,8 @@ j1939.on("pgn:61444", (msg) => {
 j1939.start();
 ```
 
-### Use the Python SDK
+### Python Integration
+
 ```bash
 pip install embedded32-sdk-python
 ```
@@ -196,82 +220,149 @@ j1939.start()
 
 ## 🖥️ Hardware Support
 
-Embedded32 runs on:
-
-| Platform | Support | SDK |
-|----------|---------|-----|
+| Platform | Status | SDK Support |
+|----------|--------|-------------|
 | **Linux** (SocketCAN) | ✅ Full | JS, Python |
 | **Raspberry Pi** | ✅ Full | JS, Python, C |
-| **STM32** | ✅ Full | C |
+| **STM32 MCU** | ✅ Full | C |
 | **ESP32** | 🚧 In Progress | C |
 | **Virtual/Simulation** | ✅ Full | All |
+| **PCAN-USB** (Windows) | ✅ Full | JS |
+
+### Linux SocketCAN Setup
+
+```bash
+# Virtual CAN (for testing without hardware)
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+
+# Real CAN at 250 kbps
+sudo ip link set can0 type can bitrate 250000
+sudo ip link set up can0
+
+# Monitor
+candump can0
+```
+
+### Raspberry Pi MCP2515 Setup
+
+```bash
+# Add to /boot/config.txt:
+dtoverlay=mcp2515-can0,oscillator=8000000,interrupt=25
+
+# Bring up interface
+sudo ip link set can0 type can bitrate 250000
+sudo ip link set up can0
+```
 
 ---
 
 ## 🏆 Why Embedded32?
 
-### We Win on Developer Experience
+### Comparison with Alternatives
 
 | Feature | Vector CANoe | Zephyr | Embedded32 |
-|---------|--------------|--------|------------|
-| **Cost** | $$$$ | Free | Free |
-| **Installation** | Complex | Complex | `npm install` |
+|---------|--------------|--------|-----------|
+| **Cost** | $$$$$ | Free | Free |
+| **Setup** | Complex | Complex | `npm install` |
 | **Learning Curve** | Steep | Steep | Gentle |
-| **Cross-Platform** | Windows only | Limited | Linux/Pi/MCU |
+| **Cross-Platform** | Windows only | Limited | Full |
 | **Open Source** | ❌ | ✅ | ✅ |
-| **Beginner Friendly** | ❌ | ❌ | ✅ |
+| **Beginner-Friendly** | ❌ | ❌ | ✅ |
+| **One-Line Install** | ❌ | ❌ | ✅ |
 
-**Embedded32 offers:**
-- ✅ One-line npm installs
-- ✅ Readable, well-documented code
-- ✅ Cross-platform support
-- ✅ Real, production-ready tools
-- ✅ Complete working examples
-- ✅ Beginner-friendly architecture
+### What You Get
+
+✅ **Free and open-source**  
+✅ **npm-installable on any platform**  
+✅ **Production-ready tools**  
+✅ **Complete working examples**  
+✅ **Readable, documented code**  
+✅ **Beginner to expert friendly**  
 
 ---
 
-## 🎓 Learning Resources
+## 📖 Documentation
 
-- **[Getting Started Guide](./docs/getting-started.md)** - Installation and first steps
-- **[Examples](./examples/)** - Working projects
-- **[API Reference](./docs/api-reference/)** - Complete API docs
-- **[Tutorials](./docs/tutorials/)** - Step-by-step guides
+**[DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)** — Master index to all documentation with:
+- Quick start guides by user type
+- Topic-based navigation
+- Search features
+
+### Phase 5 (Runtime Platform) Documentation
+
+**[PLATFORM_LAUNCHER_README.md](./PLATFORM_LAUNCHER_README.md)** — CLI and configuration guide:
+- Complete CLI command reference
+- Configuration options and examples
+- Quick start examples
+- Troubleshooting
+
+**[PLATFORM_INTEGRATION_GUIDE.md](./PLATFORM_INTEGRATION_GUIDE.md)** — Architecture and integration:
+- Component details
+- Module lifecycle
+- Event system
+- Custom modules
+- Deployment patterns
+- Monitoring & diagnostics
+
+**[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** — One-page cheat sheet:
+- All CLI commands
+- Configuration template
+- API reference
+- Troubleshooting tips
+
+**[embedded32-supervisor/README.md](./embedded32-supervisor/README.md)** — Supervisor API:
+- Full API reference
+- Module interface
+- Event types
+- Examples
+
+**[embedded32-cli/README.md](./embedded32-cli/README.md)** — CLI module:
+- CLI architecture
+- Plugin system
+- Available commands
+
+### Additional Resources
+
+**[docs/](./docs/)** — Core documentation:
+- [getting-started.md](./docs/getting-started.md) — Installation guide
+- [J1939_ARCHITECTURE.md](./docs/J1939_ARCHITECTURE.md) — Protocol details
+- [J1939_QUICKSTART.md](./docs/J1939_QUICKSTART.md) — J1939 basics
+- [RUNTIME_ARCHITECTURE.md](./docs/RUNTIME_ARCHITECTURE.md) — Core runtime design
+
+**[examples/](./examples/)** — Working code samples
+
+**[embedded32-tools/README.md](./embedded32-tools/README.md)** — CLI tools reference
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! The platform is designed to be modular, so new modules, drivers, tools, and protocol extensions are easy to add.
+We welcome contributions!
 
-**Ways to contribute:**
-- 🐛 Report bugs
-- 💡 Suggest features
+**Ways to help:**
+- 🐛 Report bugs → [Issues](https://github.com/Mukesh-SCS/Embedded32/issues)
+- 💡 Suggest features → [Discussions](https://github.com/Mukesh-SCS/Embedded32/discussions)
 - 📝 Improve documentation
 - 🔧 Submit pull requests
 - 🌟 Star the repository
 
-Please open issues or pull requests on the relevant repository.
-
-**[Read Contributing Guidelines →](./CONTRIBUTING.md)**
+**See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines**
 
 ---
 
 ## 📄 License
 
-MIT License
-
-**Author:** Mukesh Mani Tripathi
-
-**Copyright © 2025 Embedded32 Platform**
+**MIT License** © 2025 Mukesh Mani Tripathi
 
 ---
 
 ## 🔗 Links
 
-- **GitHub:** [github.com/Mukesh-SCS/Embedded32](https://github.com/Mukesh-SCS/Embedded32)
-- **Documentation:** [docs/](./docs/)
-- **Issues:** [github.com/Mukesh-SCS/Embedded32/issues](https://github.com/Mukesh-SCS/Embedded32/issues)
+- **Repository:** [github.com/Mukesh-SCS/Embedded32](https://github.com/Mukesh-SCS/Embedded32)
+- **Issues:** [GitHub Issues](https://github.com/Mukesh-SCS/Embedded32/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/Mukesh-SCS/Embedded32/discussions)
 
 ---
 

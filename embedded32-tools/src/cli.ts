@@ -1,78 +1,159 @@
 #!/usr/bin/env node
 
 import { Runtime } from "@embedded32/core";
-import { HeartbeatModule } from "@embedded32/core/dist/modules/HeartbeatModule.js";
-import { SystemHealthModule } from "@embedded32/core/dist/modules/SystemHealthModule.js";
-import { J1939EngineModule } from "@embedded32/core/dist/modules/J1939EngineModule.js";
-import { J1939GatewayModule } from "@embedded32/core/dist/modules/J1939GatewayModule.js";
 
-function printHelp() {
+// Import all commands
+import { J1939MonitorCommand } from "./commands/J1939MonitorCommand.js";
+import { CANMonitorCommand } from "./commands/CANMonitorCommand.js";
+import { J1939SendCommand } from "./commands/J1939SendCommand.js";
+import { J1939DumpCommand } from "./commands/J1939DumpCommand.js";
+import { ECUSimulateCommand } from "./commands/ECUSimulateCommand.js";
+import DashboardBridgeCommand from "./commands/DashboardBridgeCommand.js";
+import type { BaseCommand } from "./commands/BaseCommand.js";
+
+const VERSION = "0.1.0";
+
+function printMainHelp() {
   console.log(`
-Embedded32 CLI
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                         EMBEDDED32 - CAN/J1939 CLI TOOL                       ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+Automotive embedded systems platform with CAN, J1939, and vehicle simulators.
 
 Usage:
-  embedded32 demo:j1939 [--iface can0]
+  embedded32 <command> [subcommand] [options]
 
-Commands:
-  demo:j1939      Run J1939 engine + gateway demo
-`);
-}
+Main Commands:
 
-async function runJ1939Demo(iface: string) {
-  const runtime = new Runtime({
-    logLevel: "info",
-    configPath: "./config.json"
-  });
+  can                    CAN bus utilities
+    can monitor          Monitor real-time CAN traffic
+    
+  j1939                  J1939 protocol tools
+    j1939 monitor        Real-time J1939 message decode with PGN/SPN
+    j1939 send           Send J1939 messages on CAN bus
+    j1939 dump           Record J1939 data to JSON/CSV (telematics/logging)
+    
+  ecu                    ECU simulation
+    ecu simulate         Run virtual ECUs (engine, transmission, aftertreatment)
 
-  runtime.registerModule(new HeartbeatModule());
-  runtime.registerModule(new SystemHealthModule());
-  runtime.registerModule(new J1939EngineModule());
-  runtime.registerModule(new J1939GatewayModule("j1939-gw", iface));
+  dashboard              Dashboard utilities
+    dashboard bridge     Start WebSocket bridge for dashboard UI
 
-  await runtime.start();
+  help, --help, -h       Show this help message
+  --version              Show version
 
-  console.log(`J1939 demo running on ${iface}. Press Ctrl+C to exit.`);
+Quick Start:
 
-  const bus = runtime.getMessageBus();
-  bus.subscribe("j1939.tx", (msg: any) => {
-    console.log("J1939 TX:", msg.payload);
-  });
+  # Monitor J1939 messages in real-time
+  embedded32 j1939 monitor --iface can0
 
-  bus.subscribe("j1939.rx", (msg: any) => {
-    console.log("J1939 RX:", msg.payload);
-  });
+  # See decoded engine speed + fault codes
+  embedded32 j1939 monitor --iface can0 --pgn F004
 
-  // Start engine
-  bus.publish("engine.command", { cmd: "start" });
+  # Send a J1939 message
+  embedded32 j1939 send --pgn F004 --data "12 34 56 78 90 AB CD EF"
 
-  process.on("SIGINT", async () => {
-    console.log("\nStopping runtime...");
-    await runtime.stop();
-    process.exit(0);
-  });
+  # Record J1939 data for analysis
+  embedded32 j1939 dump --format json --output capture.json
+
+  # Simulate a vehicle with engine ECU
+  embedded32 ecu simulate --engine --scenario cruise
+
+Documentation:
+  https://github.com/Mukesh-SCS/Embedded32
+
+Examples:
+
+  # Real-time CAN dump (like candump)
+  embedded32 can monitor --iface can0
+
+  # J1939 live decoder with DM1 fault codes
+  embedded32 j1939 monitor --iface can0
+
+  # Filter by specific PGN (Engine Speed)
+  embedded32 j1939 monitor --iface can0 --pgn F004
+
+  # Send Engine Speed message
+  embedded32 j1939 send --pgn F004 --data "12 34 56 78 90 AB CD EF" --sa 0x00
+
+  # Export J1939 stream to JSON for telematics
+  embedded32 j1939 dump --format json --output data.json --duration 60
+
+  # Run engine simulator (broadcasts realistic ECU data)
+  embedded32 ecu simulate --engine
+
+  # Full vehicle simulation
+  embedded32 ecu simulate --engine --transmission --aftertreatment --scenario cruise
+
+Version: ${VERSION}
+License: MIT
+    `);
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const cmd = args[0];
 
-  if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
-    printHelp();
+  if (args.length === 0 || args[0] === "help" || args[0] === "--help" || args[0] === "-h") {
+    printMainHelp();
     return;
   }
 
-  if (cmd === "demo:j1939") {
-    const ifaceIndex = args.indexOf("--iface");
-    const iface = ifaceIndex !== -1 ? args[ifaceIndex + 1] : "can0";
-    await runJ1939Demo(iface);
+  if (args[0] === "--version") {
+    console.log(`Embedded32 CLI v${VERSION}`);
     return;
   }
 
-  console.error("Unknown command:", cmd);
-  printHelp();
+  const command = args[0];
+  const subcommand = args[1];
+  const cmdArgs = args.slice(2);
+
+  let cmd: BaseCommand | null = null;
+
+  // Route to appropriate command
+  try {
+    if (command === "can" && subcommand === "monitor") {
+      cmd = new CANMonitorCommand();
+    } else if (command === "j1939" && subcommand === "monitor") {
+      cmd = new J1939MonitorCommand();
+    } else if (command === "j1939" && subcommand === "send") {
+      cmd = new J1939SendCommand();
+    } else if (command === "j1939" && subcommand === "dump") {
+      cmd = new J1939DumpCommand();
+    } else if (command === "ecu" && subcommand === "simulate") {
+      cmd = new ECUSimulateCommand();
+    } else if (command === "dashboard" && subcommand === "bridge") {
+      // Handle dashboard bridge command separately since it uses commander
+      // Skip the first args (node, script, dashboard, bridge)
+      const bridgeArgs = ['node', 'script', ...cmdArgs];
+      DashboardBridgeCommand.parse(bridgeArgs);
+      return;
+    } else {
+      console.error(`Unknown command: ${command} ${subcommand || ""}`);
+      console.error("\nUse 'embedded32 help' for usage information.");
+      process.exit(1);
+    }
+
+    if (cmd) {
+      // Check for help flag
+      if (cmdArgs.includes("--help") || cmdArgs.includes("-h")) {
+        console.log(cmd.getHelp());
+        return;
+      }
+
+      cmd.setArgs(cmdArgs);
+      await cmd.execute();
+    }
+  } catch (err) {
+    console.error(`\nError: ${err}`);
+    process.exit(1);
+  }
 }
 
+/**
+ * Legacy J1939 demo (for backwards compatibility)
+ */
 main().catch((err) => {
-  console.error("Error:", err);
+  console.error("Fatal error:", err);
   process.exit(1);
 });

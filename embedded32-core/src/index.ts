@@ -6,6 +6,7 @@ export * from "./modules/CANGatewayModule.js";
 export * from "./modules/RaspberryPiLEDModule.js";
 export * from "./modules/J1939EngineModule.js";
 export * from "./modules/SystemHealthModule.js";
+export * from "./modules/J1939GatewayModule.js";
 export * from "./registry/ModuleRegistry.js";
 export * from "./scheduler/Scheduler.js";
 export * from "./messaging/MessageBus.js";

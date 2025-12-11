@@ -2,6 +2,7 @@
   "name": "embedded32-ethernet",
   "version": "0.1.0",
   "description": "Ethernet layer - UDP/TCP, MQTT client, ProtoLite serialization",
+  "type": "commonjs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -29,3 +30,4 @@
     "@types/jest": "^29.0.0"
   }
 }
+

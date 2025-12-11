@@ -1,0 +1,105 @@
+# Embedded32 Default Configuration
+# 
+# This configuration file controls all aspects of the Embedded32 runtime.
+# Edit the values below to customize your setup, then run:
+#   embedded32 start
+
+# ============================================================================
+# CAN Bus Configuration
+# ============================================================================
+can:
+  # Virtual CAN interface (Linux) or actual hardware interface
+  interface: vcan0
+  
+  # CAN baudrate (typically 250000 or 500000 for J1939)
+  baudrate: 250000
+  
+  # Enable/disable CAN module
+  enabled: true
+
+# ============================================================================
+# J1939 Protocol Configuration
+# ============================================================================
+j1939:
+  # Enable J1939 message decoding
+  enabled: true
+  
+  # Path to J1939 database (PGN definitions, SPN database)
+  databasePath: ./data/j1939.db
+
+# ============================================================================
+# Ethernet & Network Transports
+# ============================================================================
+ethernet:
+  # UDP server for local network distribution
+  udp:
+    enabled: true
+    port: 5000          # Listen on 0.0.0.0:5000
+    
+  # TCP server for stateful connections
+  tcp:
+    enabled: true
+    port: 9000          # Listen on 0.0.0.0:9000
+    
+  # MQTT client for cloud connectivity
+  mqtt:
+    enabled: false      # Set to true to enable cloud integration
+    broker: "mqtt://localhost:1883"
+    clientId: "embedded32-vehicle-1"
+    username: ""
+    password: ""
+
+# ============================================================================
+# Message Bridge Configuration
+# ============================================================================
+bridge:
+  # CAN ↔ Ethernet bridge (routes to UDP/TCP)
+  canEthernet:
+    enabled: true
+    
+    # PGN whitelist (only route these messages)
+    # Leave empty to allow all
+    whitelist:
+      - 0xF004        # Engine Speed (61444)
+      - 0xFECA        # Electronic Engine Controller (65226)
+      - 0xFF00        # Example: Custom PGN
+    
+    # PGN blacklist (exclude these messages)
+    blacklist: []
+    
+    # Rate limiting (messages per second)
+    rateLimit:
+      default: 10     # Default: 10 Hz for unlisted PGNs
+      0xF004: 20      # Engine Speed: 20 Hz (more frequent)
+      0xFECA: 5       # Engine Controller: 5 Hz (less frequent)
+  
+  # CAN ↔ MQTT bridge
+  canMqtt:
+    enabled: false
+    topicPrefix: "fleet/vehicle1"
+    payloadFormat: "nanoproto"      # or "json"
+
+# ============================================================================
+# Web Dashboard Configuration
+# ============================================================================
+dashboard:
+  enabled: true
+  port: 5173
+  host: "localhost"   # Change to 0.0.0.0 to allow remote access
+
+# ============================================================================
+# CAN Bus Simulators
+# ============================================================================
+# Simulators generate synthetic CAN messages for testing without hardware
+simulator:
+  engine: false       # Simulate engine speed, temperature, faults
+  transmission: false # Simulate gear selection, shift events
+  brakes: false       # Simulate brake pressure, ABS events
+
+# ============================================================================
+# Logging Configuration
+# ============================================================================
+logging:
+  level: info         # debug, info, warn, error
+  console: true       # Log to console
+  file: ""            # Log to file (optional)

@@ -1,0 +1,39 @@
+{
+  "name": "@embedded32/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Embedded32 runtime",
+  "main": "dist/index.js",
+  "type": "commonjs",
+  "files": ["dist"],
+  "bin": {
+    "embedded32": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@embedded32/supervisor": "*",
+    "@embedded32/core": "*",
+    "@embedded32/can": "*",
+    "@embedded32/j1939": "*",
+    "embedded32-ethernet": "^0.1.0",
+    "embedded32-bridge": "^0.1.0",
+    "embedded32-dashboard": "^0.1.0",
+    "yaml": "^2.3.0",
+    "chalk": "^5.3.0",
+    "commander": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false
+}
+
