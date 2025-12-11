@@ -2,6 +2,7 @@
   "name": "embedded32-bridge",
   "version": "0.1.0",
   "description": "CAN ↔ Ethernet ↔ MQTT routing and bridging",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

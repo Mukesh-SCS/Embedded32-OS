@@ -42,58 +42,86 @@ Embedded32 is organized into independent, composable packages:
 
 ```
 embedded32/
-├── embedded32-core/          → OS runtime (scheduler, messaging, registry)
-├── embedded32-can/           → CAN HAL, drivers, abstraction  
-├── embedded32-j1939/         → J1939 protocol stack & PGN database
-├── embedded32-ethernet/      → Ethernet, UDP/TCP, MQTT
-├── embedded32-bridge/        → CAN ↔ Ethernet ↔ MQTT routing
-├── embedded32-sim/           → Vehicle simulator
-├── embedded32-tools/         → CLI tools for monitoring & diagnostics
-├── embedded32-dashboard/     → Web dashboard (future)
+├── RUNTIME & ORCHESTRATION
+│   ├── embedded32-supervisor/     → Module lifecycle & health monitoring
+│   ├── embedded32-cli/            → CLI launcher & plugin system
+│   └── embedded32-core/           → OS runtime (scheduler, messaging, registry)
 │
-├── embedded32-sdk-c/         → C SDK for MCU
-├── embedded32-sdk-js/        → JavaScript SDK
-├── embedded32-sdk-python/    → Python SDK
-└── examples/                 → Working examples
+├── PROTOCOL STACKS
+│   ├── embedded32-can/            → CAN HAL, drivers, abstraction  
+│   ├── embedded32-j1939/          → J1939 protocol stack & PGN database
+│   └── embedded32-ethernet/       → Ethernet, UDP/TCP, MQTT
+│
+├── INTEGRATION & TOOLS
+│   ├── embedded32-bridge/         → CAN ↔ Ethernet ↔ MQTT routing
+│   ├── embedded32-sim/            → Vehicle simulator
+│   ├── embedded32-tools/          → CLI tools for monitoring & diagnostics
+│   └── embedded32-dashboard/      → Web dashboard
+│
+├── MULTI-LANGUAGE SDKs
+│   ├── embedded32-sdk-c/          → C SDK for MCU
+│   ├── embedded32-sdk-js/         → JavaScript SDK
+│   └── embedded32-sdk-python/     → Python SDK
+│
+└── DOCUMENTATION & EXAMPLES
+    ├── docs/                      → Guides & architecture
+    ├── examples/                  → Working code samples
+    └── embedded32.yaml            → Configuration template
 ```
 
-Each component works **standalone or integrated**.
+Each component works **standalone or integrated** under a unified supervisor.
 
 ---
 
 ## 🚀 Core Features
 
-### 1. Runtime (`embedded32-core`)
+### 1. Runtime Supervisor (`embedded32-supervisor`)
+- Module registration and lifecycle management
+- Health monitoring with auto-restart
+- Graceful shutdown and signal handling
+- Event-driven architecture
+- Real-time status and diagnostics
+
+### 2. CLI Launcher (`embedded32-cli`)
+- One-command platform startup: `embedded32 start`
+- Zero-config demo mode: `embedded32 demo`
+- Unified YAML configuration system
+- Plugin management: `embedded32 add <plugin>`
+- Configuration initialization: `embedded32 init`
+- Health status: `embedded32 status`
+
+### 3. Runtime (`embedded32-core`)
 - Task scheduler
 - Message bus
 - Module registry
 - Logging utilities
 
-### 2. CAN Support (`embedded32-can`)
+### 4. CAN Support (`embedded32-can`)
 - **SocketCAN** (Linux, Raspberry Pi)
 - **STM32 HAL** and **MCP2515**
 - **PCAN** hardware
 - Filters, queues, diagnostics
 
-### 3. J1939 Stack (`embedded32-j1939`)
+### 5. J1939 Stack (`embedded32-j1939`)
 - Complete SAE J1939 implementation
 - 500+ standard PGNs
 - Address Claim procedure
 - Transport Protocol (BAM, RTS/CTS)
 - Diagnostics (DM1-DM10)
 
-### 4. Networking (`embedded32-ethernet`)
+### 6. Networking (`embedded32-ethernet`)
 - UDP/TCP messaging
 - MQTT client (QoS 0/1/2)
 - WebSocket support
 - JSON encoding
 
-### 5. Bridging (`embedded32-bridge`)
+### 7. Bridging (`embedded32-bridge`)
 - CAN ↔ Ethernet forwarding
 - J1939 ↔ MQTT mapping
 - Configurable routing
+- Rate limiting and filtering
 
-### 6. Multi-Language SDKs
+### 8. Multi-Language SDKs
 - **C** — For STM32, ESP32, firmware
 - **JavaScript** — For Node.js automation
 - **Python** — For scripting and testing
@@ -114,6 +142,32 @@ npm install
 
 # Link CLI globally (optional)
 npm link
+```
+
+### Quick Start (Zero-Config Demo)
+
+```bash
+# Start complete platform with all systems running
+embedded32 demo
+
+# Opens dashboard at http://localhost:5173
+# Simulates engine data automatically
+# All modules (CAN, J1939, Ethernet, Bridge, Dashboard) enabled
+```
+
+### Start with Configuration
+
+```bash
+# Initialize new configuration
+embedded32 init
+
+# This creates embedded32.yaml with all options
+
+# Start with custom config
+embedded32 start --config embedded32.yaml
+
+# Check platform health
+embedded32 status
 ```
 
 ### Monitor Real CAN Traffic
@@ -231,19 +285,55 @@ sudo ip link set up can0
 
 ## 📖 Documentation
 
-**[embedded32-tools/README.md](embedded32-tools/README.md)** — Comprehensive CLI reference with:
-- Complete command syntax for all 5 tools
-- Real-world use case examples
-- CAN interface setup guides
-- Troubleshooting section
-- Integration examples
+**[DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)** — Master index to all documentation with:
+- Quick start guides by user type
+- Topic-based navigation
+- Search features
 
-**[docs/](./docs/)** — Additional resources:
+### Phase 5 (Runtime Platform) Documentation
+
+**[PLATFORM_LAUNCHER_README.md](./PLATFORM_LAUNCHER_README.md)** — CLI and configuration guide:
+- Complete CLI command reference
+- Configuration options and examples
+- Quick start examples
+- Troubleshooting
+
+**[PLATFORM_INTEGRATION_GUIDE.md](./PLATFORM_INTEGRATION_GUIDE.md)** — Architecture and integration:
+- Component details
+- Module lifecycle
+- Event system
+- Custom modules
+- Deployment patterns
+- Monitoring & diagnostics
+
+**[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** — One-page cheat sheet:
+- All CLI commands
+- Configuration template
+- API reference
+- Troubleshooting tips
+
+**[embedded32-supervisor/README.md](./embedded32-supervisor/README.md)** — Supervisor API:
+- Full API reference
+- Module interface
+- Event types
+- Examples
+
+**[embedded32-cli/README.md](./embedded32-cli/README.md)** — CLI module:
+- CLI architecture
+- Plugin system
+- Available commands
+
+### Additional Resources
+
+**[docs/](./docs/)** — Core documentation:
 - [getting-started.md](./docs/getting-started.md) — Installation guide
 - [J1939_ARCHITECTURE.md](./docs/J1939_ARCHITECTURE.md) — Protocol details
 - [J1939_QUICKSTART.md](./docs/J1939_QUICKSTART.md) — J1939 basics
+- [RUNTIME_ARCHITECTURE.md](./docs/RUNTIME_ARCHITECTURE.md) — Core runtime design
 
 **[examples/](./examples/)** — Working code samples
+
+**[embedded32-tools/README.md](./embedded32-tools/README.md)** — CLI tools reference
 
 ---
 

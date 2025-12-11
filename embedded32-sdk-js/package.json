@@ -2,6 +2,7 @@
   "name": "embedded32-sdk-js",
   "version": "0.1.0",
   "description": "JavaScript/TypeScript SDK for Embedded32 platform - Node.js integration",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
