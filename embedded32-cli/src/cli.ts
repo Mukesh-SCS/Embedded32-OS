@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { ConfigLoader } from './config-loader';
 import { PluginManager } from './plugin-manager';
 import { Supervisor, Logger } from '@embedded32/supervisor';
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
+import * as path from 'path';
 
 /**
  * Main CLI entry point for Embedded32
@@ -225,7 +227,7 @@ async function initializeConfig(): Promise<void> {
   console.log(`  📍 Location: ${configPath}`);
   console.log('');
   console.log('  ⚡ Next steps:');
-  console.log('    1. Edit embedded32.yaml to customize your setup');
+  console.log('  1. (Optional) Start dashboard: pushd embedded32-dashboard; npm run dev; popd');
   console.log('    2. Run: embedded32 start');
   console.log('');
 }
@@ -240,6 +242,37 @@ async function addPlugin(pluginName?: string): Promise<void> {
     console.log('  Available plugins:');
     console.log('    - embedded32-ethernet');
     console.log('    - embedded32-bridge');
+
+/**
+ * Attempt to start the embedded32-dashboard dev server (Vite) on port 5173.
+ * Returns the spawned process or undefined if startup failed.
+ */
+async function tryStartDashboardDevServer(): Promise<ChildProcessWithoutNullStreams | undefined> {
+  try {
+    const dashboardDir = path.resolve(process.cwd(), 'embedded32-dashboard');
+    // On Windows PowerShell, spawn via npm.cmd
+    const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const proc = spawn(npmCmd, ['run', 'dev'], {
+      cwd: dashboardDir,
+      stdio: 'inherit',
+      shell: false,
+    });
+
+    // Give it a short time to boot; non-blocking for the demo
+    proc.on('error', (err) => {
+      console.error(`  ⚠️  Dashboard dev server failed to start: ${err.message}`);
+    });
+    // Type guard: ensure stdio streams are not null
+    if (proc.stdin && proc.stdout && proc.stderr) {
+      return proc as ChildProcessWithoutNullStreams;
+    }
+    return undefined;
+  } catch (err) {
+    const e = err as Error;
+    console.error(`  ⚠️  Could not start dashboard dev server: ${e.message}`);
+    return undefined;
+  }
+}
     console.log('    - embedded32-dashboard');
     console.log('    - embedded32-simulator');
     return;

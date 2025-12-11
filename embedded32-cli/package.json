@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Command-line interface for Embedded32 runtime",
   "main": "dist/index.js",
-  "type": "module",
+  "type": "commonjs",
   "files": ["dist"],
   "bin": {
     "embedded32": "dist/cli.js"
@@ -36,3 +36,4 @@
   },
   "sideEffects": false
 }
+

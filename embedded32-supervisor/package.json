@@ -4,7 +4,7 @@
   "description": "Runtime supervisor and module lifecycle manager for Embedded32",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "type": "module",
+  "type": "commonjs",
   "files": ["dist"],
   "scripts": {
     "build": "tsc",
@@ -35,3 +35,4 @@
   },
   "sideEffects": false
 }
+
