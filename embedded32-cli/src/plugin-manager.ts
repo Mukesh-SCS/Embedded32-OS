@@ -1,6 +1,10 @@
 import { Supervisor, Module, ModuleState } from '@embedded32/supervisor';
 import { RuntimeConfig } from '@embedded32/supervisor';
 import { Logger } from '@embedded32/supervisor';
+import { spawn, ChildProcess } from 'child_process';
+import * as path from 'path';
+import * as WebSocket from 'ws';
+import * as http from 'http';
 
 /**
  * Plugin-based module system for extensibility
@@ -157,19 +161,75 @@ export class PluginManager {
     }));
 
     // Dashboard module
+    let dashboardProcess: ChildProcess | null = null;
+    
     this.registerPlugin('dashboard', (config: RuntimeConfig) => ({
       id: 'dashboard',
       name: 'Web Dashboard',
       version: '0.1.0',
       start: async () => {
         this.logger.info('Dashboard module starting...');
-        if (config.dashboard?.enabled) {
-          this.logger.info(`  → Server on http://${config.dashboard.host || 'localhost'}:${config.dashboard.port}`);
+        const dashboardPath = path.resolve(process.cwd(), 'embedded32-dashboard');
+        
+        try {
+          // On Windows, use shell with the command directly; on Unix use shell: false
+          const isWindows = process.platform === 'win32';
+          const command = 'npm run dev';
+          
+          if (isWindows) {
+            dashboardProcess = spawn('cmd.exe', ['/c', command], {
+              cwd: dashboardPath,
+              stdio: 'pipe',
+              env: { ...process.env, NODE_NO_WARNINGS: '1' }
+            });
+          } else {
+            dashboardProcess = spawn('npm', ['run', 'dev'], {
+              cwd: dashboardPath,
+              stdio: 'pipe',
+              env: { ...process.env, NODE_NO_WARNINGS: '1' }
+            });
+          }
+          
+          // Capture output for logging
+          dashboardProcess.stdout?.on('data', (data) => {
+            const output = data.toString().trim();
+            if (output) this.logger.info(`[Dashboard] ${output}`);
+          });
+          
+          dashboardProcess.stderr?.on('data', (data) => {
+            const output = data.toString().trim();
+            if (output) this.logger.warn(`[Dashboard] ${output}`);
+          });
+          
+          dashboardProcess.on('error', (err) => {
+            this.logger.error(`Dashboard process error: ${err.message}`);
+            dashboardProcess = null;
+          });
+          
+          dashboardProcess.on('exit', (code) => {
+            if (code !== 0) {
+              this.logger.warn(`Dashboard process exited with code ${code}`);
+            }
+            dashboardProcess = null;
+          });
+          
+          // Give the server time to start
+          await new Promise(r => setTimeout(r, 3000));
+          
+          if (config.dashboard?.enabled) {
+            this.logger.info(`  → Server on http://${config.dashboard.host || 'localhost'}:${config.dashboard.port || 5173}`);
+          }
+        } catch (err) {
+          this.logger.error(`Failed to start dashboard: ${err instanceof Error ? err.message : String(err)}`);
+          throw err;
         }
-        await new Promise(r => setTimeout(r, 150));
       },
       stop: async () => {
         this.logger.info('Dashboard module stopping...');
+        if (dashboardProcess) {
+          dashboardProcess.kill();
+          dashboardProcess = null;
+        }
       },
       getStatus: () => ({
         id: 'dashboard',
@@ -209,6 +269,198 @@ export class PluginManager {
         uptime: 0,
         restartCount: 0,
         config: { name: 'simulator', enabled: true, priority: 50, restartPolicy: 'always', maxRestarts: 5 }
+      })
+    }));
+
+    // WebSocket Bridge module for dashboard
+    let wsServer: WebSocket.Server | null = null;
+    let wsCleanup: (() => void) | null = null;
+    let activeDM1Faults: Map<number, any> = new Map(); // Track active faults by SPN
+    
+    this.registerPlugin('ws-bridge', (config: RuntimeConfig) => ({
+      id: 'ws-bridge',
+      name: 'WebSocket Bridge',
+      version: '0.1.0',
+      start: async () => {
+        this.logger.info('WebSocket Bridge module starting...');
+        try {
+          const wsPort = 9001; // Use port 9001 for WebSocket
+          const httpServer = http.createServer();
+          wsServer = new WebSocket.Server({ server: httpServer });
+
+          wsServer.on('connection', (ws) => {
+            this.logger.info('Dashboard connected via WebSocket');
+            ws.send(JSON.stringify({ type: 'connected', message: 'Connected to Embedded32 Backend' }));
+
+            ws.on('message', (data) => {
+              try {
+                const msg = JSON.parse(data.toString());
+                this.logger.debug(`Received from dashboard: ${msg.type}`);
+                
+                // Handle DM1 fault injection commands
+                if (msg.type === 'j1939.dm1.inject') {
+                  const fault = {
+                    spn: msg.spn,
+                    fmi: msg.fmi,
+                    description: msg.description,
+                    count: 1,
+                    occurrence: 1
+                  };
+                  activeDM1Faults.set(msg.spn, fault);
+                  this.logger.info(`DM1 Fault injected: SPN ${msg.spn}, FMI ${msg.fmi}`);
+                  
+                  // Send updated DM1 fault list to all clients
+                  const faults = Array.from(activeDM1Faults.values());
+                  wsServer?.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                      client.send(JSON.stringify({
+                        type: 'dm1',
+                        faults: faults
+                      }));
+                    }
+                  });
+                } else if (msg.type === 'j1939.dm1.clear') {
+                  activeDM1Faults.clear();
+                  this.logger.info('All DM1 faults cleared');
+                  
+                  // Send updated (empty) DM1 fault list to all clients
+                  wsServer?.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                      client.send(JSON.stringify({
+                        type: 'dm1',
+                        faults: []
+                      }));
+                    }
+                  });
+                }
+              } catch (e) {
+                // Ignore parse errors
+              }
+            });
+
+            ws.on('close', () => {
+              this.logger.info('Dashboard disconnected');
+            });
+
+            ws.on('error', (err) => {
+              this.logger.error(`WebSocket error: ${err.message}`);
+            });
+          });
+
+          // Mock J1939 data generation for dashboard
+          let messageCount = 0;
+          let lastStatsTime = Date.now();
+          let messagesInWindow = 0;
+
+          const j1939Interval = setInterval(() => {
+            if (wsServer && wsServer.clients.size > 0) {
+              const timestamp = Date.now();
+              const mockMessages = [
+                {
+                  type: 'j1939',
+                  timestamp: timestamp,
+                  pgn: '0xF004',
+                  sa: '0x00',
+                  parameters: {
+                    name: 'EEC1',
+                    priority: 6,
+                    spnValues: {
+                      engineSpeed: Math.floor(800 + Math.random() * 3000),
+                      coolantTemp: Math.floor(80 + Math.random() * 20),
+                      acceleratorPedal: Math.floor(Math.random() * 100)
+                    }
+                  }
+                },
+                {
+                  type: 'j1939',
+                  timestamp: timestamp + 1,
+                  pgn: '0xF001',
+                  sa: '0x00',
+                  parameters: {
+                    name: 'ETC1',
+                    priority: 6,
+                    spnValues: {
+                      transmissionGear: Math.floor(Math.random() * 6),
+                      torquePercent: Math.floor(Math.random() * 100)
+                    }
+                  }
+                }
+              ];
+
+              wsServer.clients.forEach((client) => {
+                if (client.readyState === WebSocket.OPEN) {
+                  mockMessages.forEach(msg => {
+                    client.send(JSON.stringify(msg));
+                    messageCount++;
+                    messagesInWindow++;
+                  });
+
+                  // Send bus statistics every 1 second
+                  const now = Date.now();
+                  if (now - lastStatsTime >= 1000) {
+                    const framesPerSec = messagesInWindow;
+                    // Estimate bus load as percentage of max capacity (assuming 2500 frames/sec max)
+                    const busLoad = (framesPerSec / 2500) * 100;
+                    
+                    const statsMsg = {
+                      type: 'stats',
+                      fps: framesPerSec,
+                      load: busLoad,
+                      timestamp: now
+                    };
+                    
+                    client.send(JSON.stringify(statsMsg));
+                    this.logger.debug(`WebSocket: Stats - ${framesPerSec} fps, ${busLoad.toFixed(1)}% load`);
+                  }
+                }
+              });
+
+              // Reset stats window after 1 second
+              const now = Date.now();
+              if (now - lastStatsTime >= 1000) {
+                lastStatsTime = now;
+                messagesInWindow = 0;
+              }
+              
+              if (messageCount % 20 === 0) {
+                this.logger.debug(`WebSocket: Sent ${messageCount} messages total to ${wsServer.clients.size} client(s)`);
+              }
+            }
+          }, 500); // Send data every 500ms
+
+          httpServer.listen(wsPort, () => {
+            this.logger.info(`  → WebSocket Bridge on ws://localhost:${wsPort}`);
+          });
+
+          wsCleanup = () => {
+            clearInterval(j1939Interval);
+            wsServer?.close();
+            httpServer.close();
+          };
+
+          await new Promise(r => setTimeout(r, 100));
+        } catch (err) {
+          this.logger.error(`Failed to start WebSocket Bridge: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      },
+      stop: async () => {
+        this.logger.info('WebSocket Bridge module stopping...');
+        if (wsCleanup) {
+          wsCleanup();
+          wsCleanup = null;
+        }
+        if (wsServer) {
+          wsServer = null;
+        }
+      },
+      getStatus: () => ({
+        id: 'ws-bridge',
+        name: 'WebSocket Bridge',
+        version: '0.1.0',
+        state: ModuleState.RUNNING,
+        uptime: 0,
+        restartCount: 0,
+        config: { name: 'ws-bridge', enabled: true, priority: 55, restartPolicy: 'on-failure', maxRestarts: 5 }
       })
     }));
 

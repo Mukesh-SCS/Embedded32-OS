@@ -6,4 +6,17 @@ export default defineConfig({
   server: {
     port: 5173,
   },
+  build: {
+    // Increase chunk size warning limit (Recharts is large)
+    chunkSizeWarningLimit: 600,
+    // Optimize chunking strategy
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate Recharts into its own chunk for lazy loading
+          recharts: ['recharts'],
+        },
+      },
+    },
+  },
 });

@@ -29,41 +29,42 @@ const FilterPanel: React.FC = () => {
   };
 
   return (
-    <div className="filter-panel">
-      <h2 style={{ margin: '0 0 12px 0', fontSize: 16 }}>Filters</h2>
-      <div>
-        <label>
-          PGN (hex):
+    <div className="card filter-panel">
+      <div className="card-header">
+        <span>Filters</span>
+      </div>
+      <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 8 }}>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 3, color: '#666' }}>PGN</label>
           <input 
             value={pgn} 
             onChange={e => setPgn(e.target.value)} 
             placeholder="F004"
+            style={{ width: '100%', padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }}
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          SA (hex):
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 3, color: '#666' }}>SA</label>
           <input 
             value={sa} 
             onChange={e => setSa(e.target.value)} 
             placeholder="00"
+            style={{ width: '100%', padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }}
           />
-        </label>
-      </div>
-      <div>
-        <label>
-          Priority:
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 3, color: '#666' }}>Priority</label>
           <input 
             value={priority} 
             onChange={e => setPriority(e.target.value)} 
             placeholder="3"
+            style={{ width: '100%', padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }}
           />
-        </label>
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={applyFilters}>Apply</button>
-        <button onClick={clearFilters} style={{ background: '#757575' }}>Clear</button>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button onClick={applyFilters} className="btn btn-primary">Apply</button>
+          <button onClick={clearFilters} className="btn btn-outline">Clear</button>
+        </div>
       </div>
     </div>
   );

@@ -77,92 +77,60 @@ const LogRecorder: React.FC = () => {
   };
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      gap: 8, 
-      alignItems: 'center',
-      padding: '8px 12px',
-      background: '#f5f5f5',
-      borderRadius: 4,
-      border: '1px solid #ddd'
-    }}>
-      <strong style={{ fontSize: 13, marginRight: 8 }}>Recording:</strong>
-      
-      {!isRecording ? (
-        <button
-          onClick={startRecording}
-          style={{
-            padding: '6px 16px',
-            borderRadius: 4,
-            border: 'none',
-            background: '#f44336',
-            color: 'white',
-            cursor: 'pointer',
-            fontWeight: 500,
-            fontSize: 13
-          }}
-        >
-          ⏺ Start Recording
-        </button>
-      ) : (
-        <button
-          onClick={stopRecording}
-          style={{
-            padding: '6px 16px',
-            borderRadius: 4,
-            border: 'none',
-            background: '#ff9800',
-            color: 'white',
-            cursor: 'pointer',
-            fontWeight: 500,
-            fontSize: 13,
-            animation: 'pulse 2s infinite'
-          }}
-        >
-          ⏹ Stop Recording
-        </button>
-      )}
+    <section className="row">
+      <div className="recording-card card">
+        <div className="card-header">
+          <span>Recording Controls</span>
+          {isRecording && <span className="status-pill warning">⏺ Recording</span>}
+        </div>
+        <div className="card-body" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          {!isRecording ? (
+            <button
+              onClick={startRecording}
+              className="btn btn-primary"
+            >
+              ⏺ Start
+            </button>
+          ) : (
+            <button
+              onClick={stopRecording}
+              className="btn"
+              style={{
+                background: '#f97316',
+                color: 'white',
+                animation: 'pulse 2s infinite'
+              }}
+            >
+              ⏹ Stop
+            </button>
+          )}
 
-      <div style={{ borderLeft: '1px solid #ddd', height: 24, margin: '0 8px' }} />
+          <div style={{ borderLeft: '1px solid #e5e7eb', height: 20 }} />
 
-      <button
-        onClick={downloadLog}
-        disabled={state.messages.length === 0}
-        style={{
-          padding: '6px 16px',
-          borderRadius: 4,
-          border: 'none',
-          background: state.messages.length === 0 ? '#ccc' : '#4caf50',
-          color: 'white',
-          cursor: state.messages.length === 0 ? 'not-allowed' : 'pointer',
-          fontWeight: 500,
-          fontSize: 13
-        }}
-      >
-        💾 Download JSON
-      </button>
+          <button
+            onClick={downloadLog}
+            disabled={state.messages.length === 0}
+            className="btn btn-outline"
+            style={{ opacity: state.messages.length === 0 ? 0.5 : 1 }}
+          >
+            💾 JSON
+          </button>
 
-      <button
-        onClick={exportCSV}
-        disabled={state.messages.length === 0}
-        style={{
-          padding: '6px 16px',
-          borderRadius: 4,
-          border: 'none',
-          background: state.messages.length === 0 ? '#ccc' : '#2196f3',
-          color: 'white',
-          cursor: state.messages.length === 0 ? 'not-allowed' : 'pointer',
-          fontWeight: 500,
-          fontSize: 13
-        }}
-      >
-        📊 Export CSV
-      </button>
+          <button
+            onClick={exportCSV}
+            disabled={state.messages.length === 0}
+            className="btn btn-outline"
+            style={{ opacity: state.messages.length === 0 ? 0.5 : 1 }}
+          >
+            📊 CSV
+          </button>
 
-      <div style={{ marginLeft: 8, fontSize: 12, color: '#666' }}>
-        {state.messages.length} messages
+          <div style={{ marginLeft: 'auto', fontSize: 11, color: '#6b7280' }}>
+            {state.messages.length} msgs
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
