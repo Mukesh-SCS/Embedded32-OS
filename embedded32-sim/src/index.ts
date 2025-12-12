@@ -7,12 +7,14 @@
 import { EngineSimulator, EngineScenario } from "./EngineSimulator.js";
 import { TransmissionSimulator, GearPosition } from "./TransmissionSimulator.js";
 import { AftertreatmentSimulator } from "./AftertreatmentSimulator.js";
+import { BrakeSimulator } from "./BrakeSimulator.js";
 
 export interface SimulationConfig {
   enabled: {
     engine: boolean;
     transmission: boolean;
     aftertreatment: boolean;
+    brakes: boolean;
   };
   scenario?: EngineScenario;
   broadcastInterval?: number; // ms between J1939 broadcasts
@@ -25,10 +27,12 @@ export class VehicleSimulator {
   private engine: EngineSimulator;
   private transmission: TransmissionSimulator;
   private aftertreatment: AftertreatmentSimulator;
+  private brakes: BrakeSimulator;
   private config: SimulationConfig;
   private tickInterval: NodeJS.Timeout | null = null;
   private broadcastInterval: NodeJS.Timeout | null = null;
   private listeners: Map<string, Function[]> = new Map();
+  private vehicleSpeed: number = 0; // km/h
 
   constructor(config: SimulationConfig) {
     this.config = {
@@ -39,6 +43,7 @@ export class VehicleSimulator {
     this.engine = new EngineSimulator();
     this.transmission = new TransmissionSimulator();
     this.aftertreatment = new AftertreatmentSimulator();
+    this.brakes = new BrakeSimulator();
 
     // Load scenario if provided
     if (config.scenario) {
@@ -52,6 +57,10 @@ export class VehicleSimulator {
   start() {
     if (this.config.enabled.engine) {
       this.engine.start();
+    }
+
+    if (this.config.enabled.brakes) {
+      this.brakes.releaseParkingBrake();
     }
 
     // Update engine state every 100ms
@@ -91,12 +100,28 @@ export class VehicleSimulator {
       this.aftertreatment.tick(engineState.rpm, engineState.fuelRate, engineState.load);
     }
 
+    // Calculate vehicle speed based on transmission output
+    if (this.config.enabled.transmission) {
+      const transState = this.transmission.getState();
+      // Simplified: output shaft RPM to vehicle speed (assuming wheel/diff ratio)
+      const wheelRatio = 3.73; // Typical differential ratio
+      const wheelCircumference = 2.8; // meters (typical truck tire)
+      this.vehicleSpeed = (transState.outputShaftSpeed / wheelRatio) * wheelCircumference * 0.06; // km/h
+    }
+
+    if (this.config.enabled.brakes) {
+      this.brakes.tick(this.vehicleSpeed, engineState.load);
+    }
+
     // Set transmission to Drive if engine running
     if (engineState.running && this.transmission.getGearPosition() === GearPosition.Park) {
       this.transmission.setGearPosition(GearPosition.Drive);
     }
 
-    this.emit("tick", { engine: engineState });
+    this.emit("tick", { 
+      engine: engineState,
+      vehicleSpeed: this.vehicleSpeed,
+    });
   }
 
   /**
@@ -105,47 +130,108 @@ export class VehicleSimulator {
   private broadcast() {
     const messages: any[] = [];
 
+    // Engine ECU (Source Address 0x00)
     if (this.config.enabled.engine) {
       const engineState = this.engine.getState();
+      
+      // PGN F004 - Electronic Engine Controller 1
       messages.push({
         pgn: 0xf004,
-        name: "Electronic Engine Controller 1",
+        name: "Electronic Engine Controller 1 (EEC1)",
         sa: 0x00,
         data: this.engine.encodeEEC1(),
       });
-    }
 
-    if (this.config.enabled.transmission) {
-      const transState = this.transmission.getState();
+      // PGN FEE9 - Engine Temperature 1
       messages.push({
-        pgn: 0xf003,
-        name: "Electronic Transmission Controller 1",
-        sa: 0x01,
-        data: this.transmission.encodeETC1(),
+        pgn: 0xfee9,
+        name: "Engine Temperature 1 (ET1)",
+        sa: 0x00,
+        data: this.engine.encodeET1(),
+      });
+
+      // PGN FEF2 - Fuel Economy
+      messages.push({
+        pgn: 0xfef2,
+        name: "Fuel Economy (FE)",
+        sa: 0x00,
+        data: this.engine.encodeFE(),
       });
     }
 
+    // Transmission ECU (Source Address 0x03)
+    if (this.config.enabled.transmission) {
+      const transState = this.transmission.getState();
+      
+      // PGN F003 - Electronic Transmission Controller 1
+      messages.push({
+        pgn: 0xf003,
+        name: "Electronic Transmission Controller 1 (ETC1)",
+        sa: 0x03,
+        data: this.transmission.encodeETC1(),
+      });
+
+      // PGN F00C - Transmission Fluids
+      messages.push({
+        pgn: 0xf00c,
+        name: "Transmission Fluids (TF)",
+        sa: 0x03,
+        data: this.transmission.encodeTF(),
+      });
+
+      // PGN FE6C - Transmission Control 1
+      messages.push({
+        pgn: 0xfe6c,
+        name: "Transmission Control 1 (TC1)",
+        sa: 0x03,
+        data: this.transmission.encodeTC1(),
+      });
+    }
+
+    // Brake ECU (Source Address 0x0B - typical for brake controller)
+    if (this.config.enabled.brakes) {
+      // PGN FEEE - Anti-lock Braking System
+      messages.push({
+        pgn: 0xfeee,
+        name: "Anti-lock Braking System (ABS)",
+        sa: 0x0b,
+        data: this.brakes.encodeABS(),
+      });
+
+      // PGN FEAE - Air Suspension Control 2 (includes brake pressure)
+      messages.push({
+        pgn: 0xfeae,
+        name: "Air Suspension Control 2 / Brake Pressure",
+        sa: 0x0b,
+        data: this.brakes.encodeBrakePressure(),
+      });
+    }
+
+    // Aftertreatment ECU (Source Address 0x0F - typical for emissions controller)
     if (this.config.enabled.aftertreatment) {
-      messages.push(
-        {
-          pgn: 0xf470,
-          name: "DEF Tank Level",
-          sa: 0x02,
-          data: this.aftertreatment.encodeDEFLevel(),
-        },
-        {
-          pgn: 0xf471,
-          name: "SCR Catalyst Temperature",
-          sa: 0x02,
-          data: this.aftertreatment.encodeSCRTemp(),
-        },
-        {
-          pgn: 0xf472,
-          name: "DPF Status",
-          sa: 0x02,
-          data: this.aftertreatment.encodeDPFStatus(),
-        }
-      );
+      // PGN FEDF - DEF Tank Level
+      messages.push({
+        pgn: 0xfedf,
+        name: "Aftertreatment 1 Diesel Exhaust Fluid Tank 1 (AT1T1)",
+        sa: 0x0f,
+        data: this.aftertreatment.encodeDEFLevel(),
+      });
+
+      // PGN FEEF - NOx Levels / EGR
+      messages.push({
+        pgn: 0xfeef,
+        name: "Engine Exhaust Gas Recirculation 1 (EGR1)",
+        sa: 0x0f,
+        data: this.aftertreatment.encodeNOx(),
+      });
+
+      // PGN FEE5 - DPF Status
+      messages.push({
+        pgn: 0xfee5,
+        name: "Aftertreatment 1 Diesel Particulate Filter Control (A1DPFC)",
+        sa: 0x0f,
+        data: this.aftertreatment.encodeDPFStatus(),
+      });
     }
 
     this.emit("message", messages);
@@ -161,6 +247,8 @@ export class VehicleSimulator {
       aftertreatment: this.config.enabled.aftertreatment
         ? this.aftertreatment.getState()
         : null,
+      brakes: this.config.enabled.brakes ? this.brakes.getState() : null,
+      vehicleSpeed: this.vehicleSpeed,
     };
   }
 
@@ -213,4 +301,6 @@ export class VehicleSimulator {
   }
 }
 
-export { EngineSimulator, TransmissionSimulator, AftertreatmentSimulator };
+export { EngineSimulator, TransmissionSimulator, AftertreatmentSimulator, BrakeSimulator };
+export { GearPosition } from "./TransmissionSimulator.js";
+export { RegenerationStatus } from "./AftertreatmentSimulator.js";
