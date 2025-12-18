@@ -6,7 +6,6 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { fileURLToPath } from "url";
 import { VehicleProfile, IECUSimulator, SimState } from "./interfaces/SimPort.js";
 import { DeterministicScheduler } from "./scheduler/DeterministicScheduler.js";
 import { EngineECU } from "./ecus/EngineECU.js";
@@ -16,10 +15,6 @@ import { VirtualCANPort, ICANPort } from "@embedded32/can";
 import { J1939PortImpl, parseJ1939Id, getPGNInfo, IJ1939Port } from "@embedded32/j1939";
 import { PGN } from "@embedded32/j1939";
 import { EventEmitter } from "events";
-
-// ESM equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * Simulation runner events
@@ -74,8 +69,14 @@ export class SimulationRunner extends EventEmitter {
    * Load built-in profile by name
    */
   loadBuiltinProfile(name: string): VehicleProfile {
-    const profilesDir = path.resolve(__dirname, "../vehicle-profiles");
-    const profilePath = path.join(profilesDir, `${name}.json`);
+    // Use process.cwd() as base, vehicle-profiles should be relative to package
+    const profilesDir = path.resolve(process.cwd(), "vehicle-profiles");
+    let profilePath = path.join(profilesDir, `${name}.json`);
+    
+    // Fallback: try relative to this file's compiled location
+    if (!fs.existsSync(profilePath)) {
+      profilePath = path.resolve(__dirname, "../vehicle-profiles", `${name}.json`);
+    }
     
     if (!fs.existsSync(profilePath)) {
       throw new Error(`Profile not found: ${name}`);

@@ -13,11 +13,8 @@
 import { SimulationRunner } from "../src/SimulationRunner.js";
 import { PGN } from "@embedded32/j1939";
 import * as path from "path";
-import { fileURLToPath } from "url";
 
-// ESM equivalent of __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname is available in Jest's CommonJS context
 
 // Test configuration
 const TEST_DURATION_MS = 5000; // 5 seconds
