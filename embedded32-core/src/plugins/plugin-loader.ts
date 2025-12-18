@@ -12,9 +12,9 @@ import type {
   PluginContext,
   PluginConfig,
   PluginFactory,
-  PGNData
+  PGNData,
+  J1939Message
 } from './plugin-interface';
-import type { J1939Message } from '../types';
 
 /**
  * Plugin Loader - Manages ECU plugin lifecycle

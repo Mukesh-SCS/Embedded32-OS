@@ -15,7 +15,38 @@
  * @status FROZEN
  */
 
-import type { J1939Message } from '../types';
+// =============================================================================
+// J1939 MESSAGE TYPE (For plugin use)
+// =============================================================================
+
+/**
+ * Decoded J1939 message - what plugins receive
+ */
+export interface J1939Message {
+  /** Parameter Group Number */
+  pgn: number;
+  
+  /** PGN name from database */
+  pgnName: string;
+  
+  /** Source Address of sender */
+  sourceAddress: number;
+  
+  /** Destination Address (255 for broadcast) */
+  destinationAddress: number;
+  
+  /** Priority (0-7, lower is higher priority) */
+  priority: number;
+  
+  /** Timestamp in milliseconds */
+  timestamp: number;
+  
+  /** Decoded SPN values */
+  spns: Record<string, number | string | boolean>;
+  
+  /** Raw data bytes */
+  raw: Uint8Array;
+}
 
 // =============================================================================
 // PGN DATA TYPES
