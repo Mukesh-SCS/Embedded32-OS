@@ -51,7 +51,7 @@ async function main(): Promise<void> {
 /**
  * Start the runtime with configuration
  */
-async function startRuntime(configPath?: string): Promise<void> {
+async function startRuntime(configPath?: string): Promise<never> {
   console.log('');
   console.log('  🚀 Embedded32 Runtime Launcher');
   console.log('  ═══════════════════════════════════');
@@ -98,6 +98,11 @@ async function startRuntime(configPath?: string): Promise<void> {
     supervisor.registerModule(pluginManager.createModule('simulator', config));
   }
 
+  // Register WebSocket Bridge for dashboard
+  if (pluginManager.hasPlugin('ws-bridge')) {
+    supervisor.registerModule(pluginManager.createModule('ws-bridge', config));
+  }
+
   // Setup event listeners
   const eventBus = supervisor.getEventBus();
   eventBus.on('module-started', (data: any) => {
@@ -120,26 +125,30 @@ async function startRuntime(configPath?: string): Promise<void> {
   console.log('  Press Ctrl+C to stop the runtime...');
   console.log('');
 
-  // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log('\n  ⏹️  Shutting down gracefully...');
-    await supervisor.stop();
-    console.log('  ✅ Shutdown complete');
-    process.exit(0);
-  });
+  let isShuttingDown = false;
 
-  process.on('SIGTERM', async () => {
-    console.log('\n  ⏹️  Shutting down gracefully...');
+  const handleShutdown = async (signal: string) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log(`\n  ⏹️  Shutting down gracefully (${signal})...`);
     await supervisor.stop();
     console.log('  ✅ Shutdown complete');
     process.exit(0);
+  };
+
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+
+  // Keep the process running - return a promise that never resolves
+  return new Promise<never>(() => {
+    // This promise never resolves, keeping the process alive indefinitely
   });
 }
 
 /**
  * Start demo mode with all features enabled
  */
-async function startDemo(): Promise<void> {
+async function startDemo(): Promise<never> {
   console.log('');
   console.log('  🎮 Embedded32 Demo Mode');
   console.log('  ════════════════════════');
@@ -175,6 +184,11 @@ async function startDemo(): Promise<void> {
   supervisor.registerModule(pluginManager.createModule('dashboard', demoConfig));
   supervisor.registerModule(pluginManager.createModule('simulator', demoConfig));
 
+  // Register WebSocket Bridge for dashboard
+  if (pluginManager.hasPlugin('ws-bridge')) {
+    supervisor.registerModule(pluginManager.createModule('ws-bridge', demoConfig));
+  }
+
   const eventBus = supervisor.getEventBus();
   eventBus.on('module-started', (data: any) => {
     console.log(`  ✅ ${data.moduleId} started`);
@@ -194,11 +208,23 @@ async function startDemo(): Promise<void> {
   console.log('  Press Ctrl+C to exit demo mode...');
   console.log('');
 
-  process.on('SIGINT', async () => {
-    console.log('\n  ⏹️  Exiting demo mode...');
+  let isShuttingDown = false;
+
+  const handleShutdown = async (signal: string) => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    console.log(`\n  ⏹️  Exiting demo mode (${signal})...`);
     await supervisor.stop();
     console.log('  ✅ Demo ended');
     process.exit(0);
+  };
+
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+
+  // Keep the process alive - return a promise that never resolves
+  return new Promise<never>(() => {
+    // This promise never resolves, keeping the process alive indefinitely
   });
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@embedded32/supervisor",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Runtime supervisor and module lifecycle manager for Embedded32",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -6,58 +6,50 @@ const BusLoadIndicator: React.FC = () => {
   const { framesPerSec, busLoad } = state.busStats;
 
   const getLoadColor = () => {
-    if (busLoad < 50) return '#4caf50';
-    if (busLoad < 80) return '#ff9800';
-    return '#f44336';
+    if (busLoad < 50) return '#22c55e';
+    if (busLoad < 80) return '#f59e0b';
+    return '#ef4444';
+  };
+
+  const getLoadStatus = () => {
+    if (busLoad < 50) return 'ok';
+    if (busLoad < 80) return 'warning';
+    return 'danger';
   };
 
   return (
-    <div style={{ 
-      padding: 12, 
-      background: '#f5f5f5', 
-      borderRadius: 4,
-      display: 'flex',
-      gap: 16,
-      fontSize: 13,
-      alignItems: 'center'
-    }}>
-      <div>
-        <strong>Frames/sec:</strong> <span style={{ fontSize: 16, fontWeight: 'bold', color: '#1976d2' }}>{framesPerSec}</span>
+    <div className="card">
+      <div className="card-header">
+        <span>Bus Metrics</span>
+        {state.isPaused && <span className="status-pill warning">⏸ Paused</span>}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <strong>Bus Load:</strong>
-        <div style={{ 
-          width: 120, 
-          height: 16, 
-          background: '#e0e0e0', 
-          borderRadius: 8,
-          overflow: 'hidden',
-          border: '1px solid #ccc'
-        }}>
+      <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Frames/sec:</span>
+          <strong style={{ fontSize: 18, color: '#2563eb' }}>{framesPerSec}</strong>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ minWidth: 70 }}>Bus Load:</span>
           <div style={{ 
-            width: `${Math.min(busLoad, 100)}%`, 
-            height: '100%', 
-            background: getLoadColor(),
-            transition: 'width 0.3s, background 0.3s'
-          }} />
+            flex: 1,
+            height: 20, 
+            background: '#e5e7eb', 
+            borderRadius: 4,
+            overflow: 'hidden',
+            border: `1px solid ${getLoadColor()}`
+          }}>
+            <div style={{ 
+              width: `${Math.min(busLoad, 100)}%`, 
+              height: '100%', 
+              background: getLoadColor(),
+              transition: 'width 0.3s, background 0.3s'
+            }} />
+          </div>
+          <strong style={{ minWidth: 45, textAlign: 'right', color: getLoadColor() }}>
+            {busLoad.toFixed(1)}%
+          </strong>
         </div>
-        <span style={{ fontWeight: 'bold', minWidth: 50, color: getLoadColor() }}>
-          {busLoad.toFixed(1)}%
-        </span>
       </div>
-      {state.isPaused && (
-        <div style={{ 
-          marginLeft: 'auto', 
-          background: '#ff9800', 
-          color: 'white', 
-          padding: '4px 12px', 
-          borderRadius: 4,
-          fontSize: 12,
-          fontWeight: 'bold'
-        }}>
-          ⏸ PAUSED
-        </div>
-      )}
     </div>
   );
 };

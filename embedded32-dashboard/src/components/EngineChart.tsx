@@ -6,45 +6,61 @@ const EngineChart: React.FC = () => {
   const { state } = useDashboard();
   const [chartData, setChartData] = useState<any[]>([]);
   
-  // Throttle updates to 10fps (100ms intervals)
   useEffect(() => {
     const interval = setInterval(() => {
       const latestMessages = state.messages
-        .filter(msg => msg.parameters.engineSpeed || msg.parameters.coolantTemp)
-        .slice(0, 50) // Keep last 50 data points
+        .filter(msg => msg.parameters?.spnValues?.engineSpeed || msg.parameters?.spnValues?.coolantTemp)
+        .slice(0, 50)
         .reverse()
         .map(msg => ({
-          timestamp: new Date(msg.timestamp * 1000).toLocaleTimeString(),
-          engineSpeed: msg.parameters.engineSpeed || 0,
-          coolantTemp: msg.parameters.coolantTemp || 0,
+          timestamp: new Date(msg.timestamp).toLocaleTimeString(),
+          engineSpeed: msg.parameters?.spnValues?.engineSpeed || 0,
+          coolantTemp: msg.parameters?.spnValues?.coolantTemp || 0,
         }));
       
       setChartData(latestMessages);
-    }, 100); // 10fps
+    }, 100);
     
     return () => clearInterval(interval);
   }, [state.messages]);
 
+  if (chartData.length === 0) {
+    return (
+      <div className="card">
+        <div className="card-header">
+          <span>Engine Telemetry</span>
+        </div>
+        <div className="card-body">
+          <div className="empty-state" style={{ minHeight: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            No telemetry yet – start Engine ECU to stream data
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h2>Engine Telemetry</h2>
-      <div className="chart-container">
-        <ResponsiveContainer width="100%" height={300}>
+    <div className="card">
+      <div className="card-header">
+        <span>Engine Telemetry</span>
+      </div>
+      <div className="card-body">
+        <ResponsiveContainer width="100%" height={200}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis 
               dataKey="timestamp" 
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 10 }}
               interval="preserveStartEnd"
             />
-            <YAxis tick={{ fontSize: 11 }} />
-            <Tooltip />
-            <Legend />
+            <YAxis tick={{ fontSize: 10 }} />
+            <Tooltip contentStyle={{ background: '#fff', border: '1px solid #d1d5db', borderRadius: 4 }} />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
             <Line 
               type="natural" 
               dataKey="engineSpeed" 
-              stroke="#2196f3" 
-              name="Engine Speed (RPM)" 
+              stroke="#2563eb" 
+              name="RPM" 
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}
@@ -52,8 +68,8 @@ const EngineChart: React.FC = () => {
             <Line 
               type="natural" 
               dataKey="coolantTemp" 
-              stroke="#4caf50" 
-              name="Coolant Temp (°C)" 
+              stroke="#22c55e" 
+              name="Coolant °C" 
               strokeWidth={2}
               dot={false}
               isAnimationActive={false}

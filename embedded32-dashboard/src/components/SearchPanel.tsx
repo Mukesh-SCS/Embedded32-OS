@@ -39,53 +39,58 @@ const SearchPanel: React.FC = () => {
   };
 
   return (
-    <div className="filter-panel">
-      <h2 style={{ margin: '0 0 12px 0', fontSize: 16 }}>Search PGN/SPN/ECU</h2>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          onKeyPress={e => e.key === 'Enter' && handleSearch()}
-          placeholder="Search PGN, SPN, ECU name..."
-          style={{ flex: 1, minWidth: 200 }}
-        />
-        <button onClick={handleSearch}>Search</button>
-        {showResults && (
-          <button onClick={() => setShowResults(false)} style={{ background: '#757575' }}>
-            Clear
-          </button>
-        )}
+    <div className="card">
+      <div className="card-header">
+        <span>Search</span>
       </div>
-      
-      {showResults && (
-        <div style={{ marginTop: 12, fontSize: 13 }}>
-          <strong>Results:</strong> {searchResults.length} messages found
-          {searchResults.length > 0 && (
-            <div style={{ maxHeight: 200, overflowY: 'auto', marginTop: 8 }}>
-              {searchResults.slice(0, 10).map((msg, idx) => (
-                <div 
-                  key={idx} 
-                  style={{ 
-                    padding: 8, 
-                    background: '#f5f5f5', 
-                    marginBottom: 4,
-                    borderRadius: 4,
-                    fontSize: 12
-                  }}
-                >
-                  <div><strong>PGN:</strong> {msg.pgn} | <strong>Name:</strong> {msg.parameters.name || '-'}</div>
-                  <div><strong>SA:</strong> {msg.sa} | <strong>Time:</strong> {new Date(msg.timestamp * 1000).toLocaleTimeString()}</div>
-                </div>
-              ))}
-              {searchResults.length > 10 && (
-                <div style={{ fontSize: 11, color: '#666', marginTop: 4 }}>
-                  ... and {searchResults.length - 10} more results
-                </div>
-              )}
-            </div>
+      <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <input
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleSearch()}
+            placeholder="PGN, SPN, ECU..."
+            style={{ flex: 1, padding: '4px 8px', borderRadius: 4, border: '1px solid #d1d5db', fontSize: 12 }}
+          />
+          <button onClick={handleSearch} className="btn btn-primary" style={{ whiteSpace: 'nowrap' }}>Search</button>
+          {showResults && (
+            <button onClick={() => setShowResults(false)} className="btn btn-outline" style={{ whiteSpace: 'nowrap' }}>
+              Clear
+            </button>
           )}
         </div>
-      )}
+        
+        {showResults && (
+          <div style={{ fontSize: 12 }}>
+            <strong>{searchResults.length}</strong> results
+            {searchResults.length > 0 && (
+              <div style={{ maxHeight: 150, overflowY: 'auto', marginTop: 6, borderTop: '1px solid #e5e7eb', paddingTop: 6 }}>
+                {searchResults.slice(0, 5).map((msg, idx) => (
+                  <div 
+                    key={idx} 
+                    style={{ 
+                      padding: 6, 
+                      background: '#f9fafb', 
+                      marginBottom: 4,
+                      borderRadius: 3,
+                      fontSize: 11,
+                      borderLeft: '2px solid #2563eb'
+                    }}
+                  >
+                    <div><strong>{msg.pgn}</strong> {msg.parameters.name || '-'}</div>
+                    <div style={{ color: '#6b7280' }}>{msg.sa} @ {new Date(msg.timestamp * 1000).toLocaleTimeString()}</div>
+                  </div>
+                ))}
+                {searchResults.length > 5 && (
+                  <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4, textAlign: 'center' }}>
+                    +{searchResults.length - 5} more
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -21,6 +21,9 @@ export interface EngineState {
   turboPressure: number;
   running: boolean;
   torquePercent: number;
+  fuelTemp: number;
+  oilTemp: number;
+  instantFuelEconomy: number; // km/L
 }
 
 export interface EngineScenario {
@@ -43,6 +46,9 @@ export class EngineSimulator {
     turboPressure: 0,
     running: false,
     torquePercent: 0,
+    fuelTemp: 25,
+    oilTemp: 90,
+    instantFuelEconomy: 0,
   };
 
   private currentScenario: EngineScenario | null = null;
@@ -191,6 +197,21 @@ export class EngineSimulator {
 
     // Air intake pressure (relative to atmospheric)
     this.state.intakeAirPressure = 101.3 + this.state.turboPressure * 0.1;
+
+    // Oil temperature follows coolant temp (slightly higher under load)
+    this.state.oilTemp = this.state.coolantTemp + (this.state.load / 100) * 15;
+
+    // Fuel temperature (warms up slightly from engine heat)
+    this.state.fuelTemp = 25 + (this.state.coolantTemp - 90) * 0.3;
+
+    // Instant fuel economy (km/L) - simplified calculation
+    // Assumes ~80 km/h at cruise, adjust based on load
+    if (this.state.fuelRate > 0) {
+      const estimatedSpeed = 80 * (this.state.rpm / 1800); // Rough estimate
+      this.state.instantFuelEconomy = estimatedSpeed / this.state.fuelRate;
+    } else {
+      this.state.instantFuelEconomy = 0;
+    }
   }
 
   /**
@@ -218,6 +239,62 @@ export class EngineSimulator {
 
     // Byte 6-7: Reserved
     data[6] = 0xff;
+    data[7] = 0xff;
+
+    return data;
+  }
+
+  /**
+   * Encode engine temperature as J1939 ET1 (PGN FEE9) frame
+   */
+  encodeET1(): number[] {
+    const data = new Array(8).fill(0xff);
+
+    // Byte 0: Engine Coolant Temperature (1°C/bit, offset -40)
+    data[0] = Math.round(this.state.coolantTemp + 40) & 0xff;
+
+    // Byte 1: Fuel Temperature (1°C/bit, offset -40)
+    data[1] = Math.round(this.state.fuelTemp + 40) & 0xff;
+
+    // Byte 2: Engine Oil Temperature (1°C/bit, offset -273)
+    data[2] = Math.round(this.state.oilTemp + 273) & 0xff;
+
+    // Byte 3: Turbo Oil Temperature (1°C/bit, offset -273)
+    const turboOilTemp = this.state.oilTemp + 10; // Slightly hotter than engine oil
+    data[3] = Math.round(turboOilTemp + 273) & 0xff;
+
+    // Bytes 4-7: Reserved / Other temperatures
+    data[4] = 0xff;
+    data[5] = 0xff;
+    data[6] = 0xff;
+    data[7] = 0xff;
+
+    return data;
+  }
+
+  /**
+   * Encode fuel economy as J1939 FE (PGN FEF2) frame
+   */
+  encodeFE(): number[] {
+    const data = new Array(8).fill(0xff);
+
+    // Byte 0-1: Engine Fuel Rate (0.05 L/h per bit)
+    const fuelRate = Math.round(this.state.fuelRate / 0.05);
+    data[0] = fuelRate & 0xff;
+    data[1] = (fuelRate >> 8) & 0xff;
+
+    // Byte 2-3: Instantaneous Fuel Economy (1/512 km/L per bit)
+    const fuelEconomy = Math.round(this.state.instantFuelEconomy * 512);
+    data[2] = fuelEconomy & 0xff;
+    data[3] = (fuelEconomy >> 8) & 0xff;
+
+    // Byte 4-5: Average Fuel Economy (would need to track over time)
+    data[4] = 0xff;
+    data[5] = 0xff;
+
+    // Byte 6-7: Throttle Position
+    const throttlePosition = Math.round(this.state.load); // Simplified
+    data[6] = throttlePosition & 0xff;
     data[7] = 0xff;
 
     return data;

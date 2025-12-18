@@ -1,6 +1,6 @@
 {
-  "name": "embedded32-bridge",
-  "version": "0.1.0",
+  "name": "embedded32/bridge",
+  "version": "1.0.0",
   "description": "CAN ↔ Ethernet ↔ MQTT routing and bridging",
   "type": "commonjs",
   "main": "dist/index.js",

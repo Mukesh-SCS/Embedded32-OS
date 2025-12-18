@@ -1,0 +1,36 @@
+{
+  "name": "basic-car",
+  "description": "Basic passenger car simulation with Engine, Transmission, and Diagnostic Tool ECUs",
+  "bus": {
+    "interface": "vcan0",
+    "bitrate": 250000
+  },
+  "ecus": [
+    {
+      "name": "engine",
+      "address": 0,
+      "rateMs": 100,
+      "enabled": true
+    },
+    {
+      "name": "transmission",
+      "address": 3,
+      "rateMs": 100,
+      "enabled": true
+    },
+    {
+      "name": "diag_tool",
+      "address": 249,
+      "rateMs": 500,
+      "enabled": true
+    }
+  ],
+  "faults": {
+    "engine_overheat": false,
+    "transmission_fault": false
+  },
+  "simulation": {
+    "tickMs": 10,
+    "durationMs": 0
+  }
+}

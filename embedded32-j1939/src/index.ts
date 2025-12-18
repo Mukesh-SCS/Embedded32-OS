@@ -77,3 +77,7 @@ export {
   J1939CANBinding,
   type J1939TxPayload,
 } from "./gateway/J1939CANBinding.js";
+
+// Phase 2 - Locked Interfaces
+export * from "./interfaces/J1939Port.js";
+export { J1939PortImpl } from "./ports/J1939PortImpl.js";

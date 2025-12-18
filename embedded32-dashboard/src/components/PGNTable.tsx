@@ -12,7 +12,6 @@ const PGNTable: React.FC = () => {
     if (sa && msg.sa !== `0x${sa.toString(16).toUpperCase()}`) return false;
     if (priority && msg.parameters.priority !== priority) return false;
     
-    // Apply search query
     if (state.searchQuery) {
       const query = state.searchQuery.toLowerCase();
       const matchesPGN = msg.pgn.toLowerCase().includes(query);
@@ -45,10 +44,10 @@ const PGNTable: React.FC = () => {
     if (!params.spnValues) return '-';
     return (
       <div className="spn-values">
-        {params.engineSpeed && <div>Engine Speed: <strong>{params.engineSpeed} rpm</strong></div>}
-        {params.coolantTemp && <div>Coolant Temp: <strong>{params.coolantTemp} °C</strong></div>}
-        {params.fuelRate && <div>Fuel Rate: <strong>{params.fuelRate} L/h</strong></div>}
-        {params.transmissionGear && <div>Gear: <strong>{params.transmissionGear}</strong></div>}
+        {params.spnValues.engineSpeed && <div>Speed: <strong>{params.spnValues.engineSpeed}R</strong></div>}
+        {params.spnValues.coolantTemp && <div>Coolant: <strong>{params.spnValues.coolantTemp}°</strong></div>}
+        {params.spnValues.fuelRate && <div>Fuel: <strong>{params.spnValues.fuelRate}L/h</strong></div>}
+        {params.spnValues.transmissionGear && <div>Gear: <strong>{params.spnValues.transmissionGear}</strong></div>}
       </div>
     );
   };
@@ -70,90 +69,96 @@ const PGNTable: React.FC = () => {
   const hasActiveFilters = state.filters.pgn || state.filters.sa || state.filters.priority;
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h2 style={{ margin: 0 }}>Live PGN Table</h2>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+    <div className="card">
+      <div className="card-header">
+        <span>Live PGN Table</span>
+        <div className="table-tools">
           <input
             type="text"
-            placeholder="Search PGN, SA, Name..."
+            placeholder="Search..."
             value={state.searchQuery}
             onChange={(e) => dispatch({ type: 'SET_SEARCH_QUERY', query: e.target.value })}
             style={{
-              padding: '6px 12px',
+              padding: '4px 8px',
               borderRadius: 4,
-              border: '1px solid #ddd',
-              fontSize: 13,
-              width: 200
+              border: '1px solid #d1d5db',
+              fontSize: 12,
+              width: 130
             }}
           />
+          <label style={{ display: 'flex', gap: 4, alignItems: 'center', fontSize: 12, whiteSpace: 'nowrap' }}>
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => setAutoScroll(e.target.checked)}
+            />
+            Auto
+          </label>
           <button
             onClick={() => dispatch({ type: 'TOGGLE_PAUSE' })}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 4,
-              border: 'none',
-              background: state.isPaused ? '#4caf50' : '#ff9800',
-              color: 'white',
-              cursor: 'pointer',
-              fontWeight: 500,
-              fontSize: 13
-            }}
+            className={`btn btn-small ${state.isPaused ? 'btn-outline' : 'btn-primary'}`}
           >
-            {state.isPaused ? '▶ Resume' : '⏸ Pause'}
+            {state.isPaused ? '▶' : '⏸'}
           </button>
         </div>
       </div>
       
       {hasActiveFilters && (
-        <div className="filter-indicators">
-          <strong>Active Filters:</strong>{' '}
+        <div style={{ 
+          background: '#e3f2fd', 
+          padding: '6px 8px', 
+          borderRadius: 4, 
+          marginBottom: 8, 
+          fontSize: 11, 
+          color: '#1976d2' 
+        }}>
+          <strong>Filters:</strong>{' '}
           {state.filters.pgn && `PGN=0x${state.filters.pgn.toString(16).toUpperCase()} `}
           {state.filters.sa && `SA=0x${state.filters.sa.toString(16).toUpperCase()} `}
-          {state.filters.priority && `Priority=${state.filters.priority}`}
+          {state.filters.priority && `Pri=${state.filters.priority}`}
         </div>
       )}
       
-      <div className="auto-scroll-toggle">
-        <input
-          type="checkbox"
-          id="auto-scroll"
-          checked={autoScroll}
-          onChange={(e) => setAutoScroll(e.target.checked)}
-        />
-        <label htmlFor="auto-scroll">Auto-scroll</label>
-      </div>
-      
-      <div className="pgn-table-container" ref={tableRef}>
-        <table>
-          <thead>
-            <tr>
-              <th>Priority</th>
-              <th>PGN</th>
-              <th>Name</th>
-              <th>SA</th>
-              <th>Timestamp</th>
-              <th>SPN Values</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((msg, idx) => (
-              <tr 
-                key={idx} 
-                className={getRowClassName(msg.pgn)}
-                onClick={() => handleRowClick(msg)}
-                style={{ cursor: 'pointer' }}
-              >
-                <td>{msg.parameters.priority || '-'}</td>
-                <td>{highlightText(msg.pgn)}</td>
-                <td>{msg.parameters.name ? highlightText(msg.parameters.name) : '-'}</td>
-                <td>{highlightText(msg.sa)}</td>
-                <td>{new Date(msg.timestamp * 1000).toLocaleTimeString()}</td>
-                <td>{renderSPNValues(msg.parameters)}</td>
+      <div className="card-body">
+        <div className="pgn-table-wrapper" ref={tableRef}>
+          <table className="pgn-table">
+            <thead>
+              <tr>
+                <th>Prio</th>
+                <th>PGN</th>
+                <th>Name</th>
+                <th>SA</th>
+                <th>Time</th>
+                <th>SPN Values</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.length > 0 ? (
+                filtered.map((msg, idx) => (
+                  <tr 
+                    key={idx} 
+                    className={getRowClassName(msg.pgn)}
+                    onClick={() => handleRowClick(msg)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <td>{msg.parameters.priority || '-'}</td>
+                    <td>{highlightText(msg.pgn)}</td>
+                    <td>{msg.parameters.name ? highlightText(msg.parameters.name) : '-'}</td>
+                    <td>{highlightText(msg.sa)}</td>
+                    <td>{new Date(msg.timestamp * 1000).toLocaleTimeString()}</td>
+                    <td>{renderSPNValues(msg.parameters)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', color: '#9ca3af', padding: '16px 8px' }}>
+                    No messages yet
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

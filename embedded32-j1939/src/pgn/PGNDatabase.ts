@@ -2,7 +2,10 @@
  * J1939 Parameter Group Number (PGN) Database
  *
  * This is a minimal starting database for common engine/vehicle parameters.
- * Extended database with 500+ PGNs can be added in Phase 2.
+ * Extended database with 500+ PGNs can be added in Phase 3.
+ *
+ * NOTE: Some PGNs in this database are minimal or proprietary for simulation
+ * purposes. Always refer to SAE J1939 documentation for authoritative definitions.
  *
  * Format: PGN (hex) => { name, length in bytes }
  */
@@ -21,16 +24,35 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
     description: "Engine speed, throttle position, torque",
   },
 
-  0x00fef1: {
-    name: "Cruise Control/Vehicle Speed (CC/VS)",
+  0x00f003: {
+    name: "Electronic Transmission Controller 1 (ETC1)",
     length: 8,
-    description: "Vehicle speed, cruise control status",
+    description: "Transmission gear, torque converter, shift status",
+  },
+
+  // Proprietary/Simulation PGNs
+  0x00f000: {
+    name: "Proprietary Transmission Status",
+    length: 8,
+    description: "[Simulation] Current gear and transmission state (proprietary format)",
+  },
+
+  0x00fee9: {
+    name: "Engine Temperature 1 (ET1)",
+    length: 8,
+    description: "Coolant temperature, fuel temperature",
   },
 
   0x00fef2: {
-    name: "Fuel Rate",
-    length: 4,
-    description: "Fuel consumption rate",
+    name: "Fuel Economy (FE)",
+    length: 8,
+    description: "Fuel rate, instantaneous fuel economy",
+  },
+
+  0x00fef1: {
+    name: "Cruise Control/Vehicle Speed (CCVS)",
+    length: 8,
+    description: "Vehicle speed, cruise control status",
   },
 
   0x00fef5: {
@@ -45,24 +67,57 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
     description: "Oil, coolant, and fuel tank levels",
   },
 
-  0x00fedf: {
-    name: "Aftertreatment 1 Diesel Exhaust Fluid Tank Level",
-    length: 2,
-    description: "DEF tank level percentage",
+  // Transmission
+  0x00f00c: {
+    name: "Transmission Fluids (TF)",
+    length: 8,
+    description: "Transmission oil temperature, pressure, level",
   },
 
-  // Transmission
-  0x00f003: {
-    name: "Electronic Transmission Controller 1 (ETC1)",
+  0x00fe6c: {
+    name: "Transmission Control 1 (TC1)",
     length: 8,
-    description: "Gear selection, transmission temperature",
+    description: "Clutch pressure, torque converter status",
+  },
+
+  // Engine Temperature
+  0x00feee: {
+    name: "Engine Temperature 1 (ET1)",
+    length: 8,
+    description: "Coolant temperature, fuel temperature, oil temperature",
   },
 
   // Brakes
+
+  0x00feae: {
+    name: "Air Suspension Control 2 (ASC2)",
+    length: 8,
+    description: "Brake circuit pressures, air pressure",
+  },
+
   0x00f001: {
     name: "Brake System Pressure",
     length: 8,
     description: "Brake line pressure, pedal position",
+  },
+
+  // Aftertreatment / Emissions
+  0x00feef: {
+    name: "Engine Exhaust Gas Recirculation 1 (EGR1)",
+    length: 8,
+    description: "NOx levels, EGR valve position",
+  },
+
+  0x00fedf: {
+    name: "Aftertreatment 1 Diesel Exhaust Fluid Tank 1 (AT1T1)",
+    length: 8,
+    description: "DEF tank level percentage",
+  },
+
+  0x00fee5: {
+    name: "Aftertreatment 1 Diesel Particulate Filter Control (A1DPFC)",
+    length: 8,
+    description: "DPF status, soot level, regeneration status",
   },
 
   // Diagnostics
@@ -92,9 +147,9 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
   },
 
   0x00ea00: {
-    name: "Request for Address Claim",
+    name: "Request",
     length: 3,
-    description: "Request devices to re-claim addresses",
+    description: "Request a specific PGN from one or all devices",
   },
 
   // Multi-packet Messaging
