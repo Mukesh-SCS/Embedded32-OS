@@ -1,5 +1,5 @@
 /**
- * Engine ECU Simulator - Phase 2
+ * Engine ECU Simulator - Phase 2/3
  * 
  * Broadcasts:
  * - PGN 61444 (0xF004) - Electronic Engine Controller 1 (EEC1)
@@ -7,11 +7,18 @@
  * 
  * Responds to:
  * - PGN Request (59904) for engine data
+ * 
+ * Phase 3: Accepts commands:
+ * - PGN 61184 (0xEF00) - Engine Control Command (Proprietary B)
+ *   Bytes 0-1: Target RPM, Byte 2: Enable (0=ignore, 1=apply)
  */
 
 import { IECUSimulator, ECUConfig, SimState } from "../interfaces/SimPort.js";
 import { IJ1939Port, PGN, J1939Message } from "@embedded32/j1939";
 import { EventEmitter } from "events";
+
+// Engine Control Command PGN (Proprietary B)
+const PGN_ENGINE_CONTROL_CMD = 0xEF00;
 
 /**
  * Engine state data
@@ -68,6 +75,59 @@ export class EngineECU extends EventEmitter implements IECUSimulator {
     this.j1939Port.on("request", (pgn: number, requesterSA: number) => {
       this.handleRequest(pgn, requesterSA);
     });
+
+    // Phase 3: Listen for Engine Control Commands
+    this.j1939Port.on("message", (msg: J1939Message) => {
+      this.handleMessage(msg);
+    });
+  }
+
+  /**
+   * Handle incoming J1939 message
+   */
+  private handleMessage(msg: J1939Message): void {
+    // Engine Control Command (0xEF00)
+    if (msg.pgn === PGN_ENGINE_CONTROL_CMD) {
+      this.handleEngineControlCommand(msg);
+    }
+  }
+
+  /**
+   * Handle Engine Control Command (PGN 0xEF00)
+   * 
+   * Payload:
+   * - Bytes 0-1: Target RPM (uint16, rpm)
+   * - Byte 2: Enable flag (0 = ignore, 1 = apply)
+   * - Bytes 3-7: Reserved (0xFF)
+   */
+  private handleEngineControlCommand(msg: J1939Message): void {
+    if (msg.data.length < 3) {
+      this.emit("warning", "Engine Control Command: insufficient data");
+      return;
+    }
+
+    const targetRpm = msg.data[0] | (msg.data[1] << 8);
+    const enable = msg.data[2];
+
+    if (enable === 1) {
+      // Validate RPM range (0-8000)
+      if (targetRpm >= 0 && targetRpm <= 8000) {
+        const oldTarget = this.targetRpm;
+        this.targetRpm = targetRpm;
+        
+        this.emit("command-received", {
+          pgn: PGN_ENGINE_CONTROL_CMD,
+          from: msg.sa,
+          targetRpm,
+          oldTargetRpm: oldTarget
+        });
+
+        // Log for visibility
+        console.log(`  🎮 Engine received command from SA=0x${msg.sa.toString(16).toUpperCase()}: Target RPM = ${targetRpm}`);
+      } else {
+        this.emit("warning", `Engine Control Command: invalid RPM ${targetRpm}`);
+      }
+    }
   }
 
   /**
