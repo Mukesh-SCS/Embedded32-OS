@@ -2,7 +2,10 @@
  * J1939 Parameter Group Number (PGN) Database
  *
  * This is a minimal starting database for common engine/vehicle parameters.
- * Extended database with 500+ PGNs can be added in Phase 2.
+ * Extended database with 500+ PGNs can be added in Phase 3.
+ *
+ * NOTE: Some PGNs in this database are minimal or proprietary for simulation
+ * purposes. Always refer to SAE J1939 documentation for authoritative definitions.
  *
  * Format: PGN (hex) => { name, length in bytes }
  */
@@ -25,6 +28,13 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
     name: "Electronic Transmission Controller 1 (ETC1)",
     length: 8,
     description: "Transmission gear, torque converter, shift status",
+  },
+
+  // Proprietary/Simulation PGNs
+  0x00f000: {
+    name: "Proprietary Transmission Status",
+    length: 8,
+    description: "[Simulation] Current gear and transmission state (proprietary format)",
   },
 
   0x00fee9: {
@@ -70,12 +80,14 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
     description: "Clutch pressure, torque converter status",
   },
 
-  // Brakes
+  // Engine Temperature
   0x00feee: {
-    name: "Anti-lock Braking System (ABS)",
+    name: "Engine Temperature 1 (ET1)",
     length: 8,
-    description: "ABS status, wheel speeds",
+    description: "Coolant temperature, fuel temperature, oil temperature",
   },
+
+  // Brakes
 
   0x00feae: {
     name: "Air Suspension Control 2 (ASC2)",
@@ -135,9 +147,9 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
   },
 
   0x00ea00: {
-    name: "Request for Address Claim",
+    name: "Request",
     length: 3,
-    description: "Request devices to re-claim addresses",
+    description: "Request a specific PGN from one or all devices",
   },
 
   // Multi-packet Messaging

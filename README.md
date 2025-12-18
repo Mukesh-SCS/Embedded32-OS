@@ -140,11 +140,59 @@ cd Embedded32
 # Install all packages
 npm install
 
-# Link CLI globally (optional)
-npm link
+# Build the project
+npm run build
 ```
 
-### Quick Start (Zero-Config Demo)
+---
+
+## 🚀 Phase 2 Quickstart (One Command!)
+
+```bash
+embedded32 simulate vehicle/basic-truck
+```
+
+**That's it!** This single command:
+- ✅ Creates a virtual CAN bus
+- ✅ Starts Engine ECU (broadcasts PGN 61444 every 100ms)
+- ✅ Starts Transmission ECU (broadcasts gear state)
+- ✅ Starts Diagnostic Tool (sends PGN requests every 500ms)
+- ✅ Shows all decoded J1939 traffic with SPN values
+
+**Output:**
+```
+╔════════════════════════════════════════════════════════════════╗
+║           EMBEDDED32 VEHICLE SIMULATION                        ║
+╚════════════════════════════════════════════════════════════════╝
+
+  Profile: basic-truck
+  CAN Interface: vcan0
+
+  ECUs Started:
+    ✓ engine: claimed SA=0x00
+    ✓ transmission: claimed SA=0x03
+    ✓ diag_tool: claimed SA=0xF9
+
+  J1939 Traffic:
+  ─────────────────────────────────────────────────────────────
+  18F00400  8  F0 FF 9C 9C 60 00 FF FF   PGN=0F004 EngineSpeed=1500rpm SA=00
+```
+
+### Optional: Setup Virtual CAN (Linux/WSL)
+
+```bash
+# Setup vcan for integration with other CAN tools
+embedded32 can up vcan0
+
+# Or manually:
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+```
+
+---
+
+### Legacy Quick Start
 
 ```bash
 # Start complete platform with all systems running

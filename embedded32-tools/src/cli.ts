@@ -1,8 +1,21 @@
 #!/usr/bin/env node
 
-import { Runtime } from "@embedded32/core";
+/**
+ * Embedded32 CLI - Phase 2
+ * 
+ * Main entry point for all Embedded32 commands.
+ */
 
-// Import all commands
+// MUST be first import - suppresses non-critical warnings from dependencies
+import "./suppress-warnings.js";
+
+// Phase 2 command imports
+import { setupVirtualCAN, printManualSetupInstructions } from "./commands/CANSetupCommand.js";
+import { runSimulateCommand } from "./commands/SimulateCommand.js";
+import { runMonitorCommand } from "./commands/MonitorCommand.js";
+import { runLogCommand } from "./commands/LogCommand.js";
+
+// Legacy command imports (Phase 1 compatibility)
 import { J1939MonitorCommand } from "./commands/J1939MonitorCommand.js";
 import { CANMonitorCommand } from "./commands/CANMonitorCommand.js";
 import { J1939SendCommand } from "./commands/J1939SendCommand.js";
@@ -11,42 +24,57 @@ import { ECUSimulateCommand } from "./commands/ECUSimulateCommand.js";
 import DashboardBridgeCommand from "./commands/DashboardBridgeCommand.js";
 import type { BaseCommand } from "./commands/BaseCommand.js";
 
-const VERSION = "0.1.0";
+const VERSION = "1.0.0";
 
 function printMainHelp() {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                         EMBEDDED32 - CAN/J1939 CLI TOOL                       ║
+║                    EMBEDDED32 PLATFORM v${VERSION}                              ║
+║              CAN / J1939 / Vehicle Simulation Toolkit                         ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
-Automotive embedded systems platform with CAN, J1939, and vehicle simulators.
-
 Usage:
-  embedded32 <command> [subcommand] [options]
+  embedded32 <command> [options]
 
-Main Commands:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  PHASE 2 COMMANDS (Primary)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  can                    CAN bus utilities
-    can monitor          Monitor real-time CAN traffic
-    
-  j1939                  J1939 protocol tools
-    j1939 monitor        Real-time J1939 message decode with PGN/SPN
-    j1939 send           Send J1939 messages on CAN bus
-    j1939 dump           Record J1939 data to JSON/CSV (telematics/logging)
-    
-  ecu                    ECU simulation
-    ecu simulate         Run virtual ECUs (engine, transmission, aftertreatment)
+  simulate <profile>     Run vehicle simulation from a profile
+                         Example: embedded32 simulate vehicle/basic-truck
 
-  dashboard              Dashboard utilities
-    dashboard bridge     Start WebSocket bridge for dashboard UI
+  monitor <interface>    Monitor CAN/J1939 traffic with live decoding
+                         Example: embedded32 monitor vcan0
 
-  help, --help, -h       Show this help message
-  --version              Show version
+  log <interface>        Log CAN traffic to file
+                         Example: embedded32 log vcan0 --out logs/run1.jsonl
 
-Quick Start:
+  can up <interface>     Setup virtual CAN interface (Linux/WSL)
+                         Example: embedded32 can up vcan0
 
-  # Monitor J1939 messages in real-time
-  embedded32 j1939 monitor --iface can0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  LEGACY COMMANDS (Phase 1)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  can monitor            Monitor raw CAN traffic
+  j1939 monitor          Real-time J1939 decode
+  j1939 send             Send J1939 messages
+  j1939 dump             Record J1939 data to file
+  ecu simulate           Run legacy ECU simulation
+  dashboard bridge       Start WebSocket bridge for dashboard UI
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quick Start (ONE COMMAND!):
+
+  embedded32 simulate vehicle/basic-truck
+
+This will:
+  ✓ Create a virtual CAN bus
+  ✓ Start Engine ECU (broadcasts PGN 61444 @ 100ms)
+  ✓ Start Transmission ECU (broadcasts gear state)
+  ✓ Start Diagnostic Tool (sends requests @ 500ms)
+  ✓ Show all decoded J1939 traffic
 
   # See decoded engine speed + fault codes
   embedded32 j1939 monitor --iface can0 --pgn F004
@@ -60,32 +88,7 @@ Quick Start:
   # Simulate a vehicle with engine ECU
   embedded32 ecu simulate --engine --scenario cruise
 
-Documentation:
-  https://github.com/Mukesh-SCS/Embedded32
-
-Examples:
-
-  # Real-time CAN dump (like candump)
-  embedded32 can monitor --iface can0
-
-  # J1939 live decoder with DM1 fault codes
-  embedded32 j1939 monitor --iface can0
-
-  # Filter by specific PGN (Engine Speed)
-  embedded32 j1939 monitor --iface can0 --pgn F004
-
-  # Send Engine Speed message
-  embedded32 j1939 send --pgn F004 --data "12 34 56 78 90 AB CD EF" --sa 0x00
-
-  # Export J1939 stream to JSON for telematics
-  embedded32 j1939 dump --format json --output data.json --duration 60
-
-  # Run engine simulator (broadcasts realistic ECU data)
-  embedded32 ecu simulate --engine
-
-  # Full vehicle simulation
-  embedded32 ecu simulate --engine --transmission --aftertreatment --scenario cruise
-
+Documentation: https://github.com/Mukesh-SCS/Embedded32
 Version: ${VERSION}
 License: MIT
     `);
@@ -99,19 +102,73 @@ async function main() {
     return;
   }
 
-  if (args[0] === "--version") {
+  if (args[0] === "--version" || args[0] === "-v") {
     console.log(`Embedded32 CLI v${VERSION}`);
     return;
   }
 
   const command = args[0];
   const subcommand = args[1];
-  const cmdArgs = args.slice(2);
+  const cmdArgs = args.slice(1); // For Phase 2 commands
+  const legacyArgs = args.slice(2); // For legacy commands
 
-  let cmd: BaseCommand | null = null;
+  // ════════════════════════════════════════════════════════════════
+  // PHASE 2 COMMANDS (Primary)
+  // ════════════════════════════════════════════════════════════════
 
-  // Route to appropriate command
   try {
+    // simulate vehicle/basic-truck
+    if (command === "simulate") {
+      await runSimulateCommand(cmdArgs);
+      return;
+    }
+
+    // monitor vcan0
+    if (command === "monitor" && subcommand && !subcommand.startsWith("-")) {
+      await runMonitorCommand(cmdArgs);
+      return;
+    }
+
+    // log vcan0 --out file.jsonl
+    if (command === "log") {
+      await runLogCommand(cmdArgs);
+      return;
+    }
+
+    // can up vcan0
+    if (command === "can" && subcommand === "up") {
+      const ifname = args[2] || "vcan0";
+      console.log("");
+      console.log("╔════════════════════════════════════════════════════════════╗");
+      console.log("║              EMBEDDED32 VIRTUAL CAN SETUP                  ║");
+      console.log("╚════════════════════════════════════════════════════════════╝");
+      console.log("");
+      
+      const result = await setupVirtualCAN(ifname);
+      
+      if (result.success) {
+        console.log("");
+        console.log(`  ✓ ${result.message}`);
+        console.log("");
+        console.log("  You can now run:");
+        console.log(`    embedded32 simulate vehicle/basic-truck`);
+        console.log(`    embedded32 monitor ${ifname}`);
+        console.log("");
+      } else {
+        console.log("");
+        console.log(`  ❌ ${result.message}`);
+        console.log("");
+        printManualSetupInstructions(ifname);
+      }
+      return;
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // LEGACY COMMANDS (Phase 1 compatibility)
+    // ════════════════════════════════════════════════════════════════
+
+    let cmd: BaseCommand | null = null;
+
     if (command === "can" && subcommand === "monitor") {
       cmd = new CANMonitorCommand();
     } else if (command === "j1939" && subcommand === "monitor") {
@@ -123,36 +180,30 @@ async function main() {
     } else if (command === "ecu" && subcommand === "simulate") {
       cmd = new ECUSimulateCommand();
     } else if (command === "dashboard" && subcommand === "bridge") {
-      // Handle dashboard bridge command separately since it uses commander
-      // Skip the first args (node, script, dashboard, bridge)
-      const bridgeArgs = ['node', 'script', ...cmdArgs];
+      const bridgeArgs = ['node', 'script', ...legacyArgs];
       DashboardBridgeCommand.parse(bridgeArgs);
       return;
     } else {
-      console.error(`Unknown command: ${command} ${subcommand || ""}`);
-      console.error("\nUse 'embedded32 help' for usage information.");
+      console.error(`\n  ❌ Unknown command: ${command}${subcommand ? ' ' + subcommand : ''}`);
+      console.error("\n  Use 'embedded32 help' for usage information.\n");
       process.exit(1);
     }
 
     if (cmd) {
-      // Check for help flag
-      if (cmdArgs.includes("--help") || cmdArgs.includes("-h")) {
+      if (legacyArgs.includes("--help") || legacyArgs.includes("-h")) {
         console.log(cmd.getHelp());
         return;
       }
 
-      cmd.setArgs(cmdArgs);
+      cmd.setArgs(legacyArgs);
       await cmd.execute();
     }
-  } catch (err) {
-    console.error(`\nError: ${err}`);
+  } catch (err: any) {
+    console.error(`\n  ❌ Error: ${err.message || err}\n`);
     process.exit(1);
   }
 }
 
-/**
- * Legacy J1939 demo (for backwards compatibility)
- */
 main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);

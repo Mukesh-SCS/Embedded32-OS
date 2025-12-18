@@ -1,6 +1,6 @@
 {
   "name": "@embedded32/cli",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Command-line interface for Embedded32 runtime",
   "main": "dist/index.js",
   "type": "commonjs",

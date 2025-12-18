@@ -1,6 +1,6 @@
 {
   "name": "@embedded32/j1939",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Professional SAE J1939 protocol stack for heavy-duty vehicle communication",
   "keywords": [
     "j1939",
@@ -38,7 +38,7 @@
   "author": "Mukesh Mani Tripathi",
   "license": "MIT",
   "dependencies": {
-    "@embedded32/can": "0.1.0"
+    "@embedded32/can": "1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

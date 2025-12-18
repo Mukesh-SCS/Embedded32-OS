@@ -1,6 +1,6 @@
 {
   "name": "@embedded32/tools",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Embedded32 command line tools",
   "main": "dist/cli.js",
   "types": "dist/cli.d.ts",
@@ -17,9 +17,9 @@
     "test": "echo \"no tests yet\""
   },
   "dependencies": {
-    "@embedded32/can": "0.1.0",
-    "@embedded32/core": "0.1.0",
-    "@embedded32/j1939": "0.1.0",
+    "@embedded32/can": "1.0.0",
+    "@embedded32/core": "1.0.0",
+    "@embedded32/j1939": "1.0.0",
     "commander": "^14.0.2",
     "ws": "^8.18.3"
   },

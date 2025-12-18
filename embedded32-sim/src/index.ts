@@ -304,3 +304,11 @@ export class VehicleSimulator {
 export { EngineSimulator, TransmissionSimulator, AftertreatmentSimulator, BrakeSimulator };
 export { GearPosition } from "./TransmissionSimulator.js";
 export { RegenerationStatus } from "./AftertreatmentSimulator.js";
+
+// Phase 2 - Locked Interfaces and Implementations
+export * from "./interfaces/SimPort.js";
+export { DeterministicScheduler } from "./scheduler/DeterministicScheduler.js";
+export { EngineECU } from "./ecus/EngineECU.js";
+export { TransmissionECU } from "./ecus/TransmissionECU.js";
+export { DiagnosticToolECU } from "./ecus/DiagnosticToolECU.js";
+export { SimulationRunner } from "./SimulationRunner.js";
