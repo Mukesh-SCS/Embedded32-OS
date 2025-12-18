@@ -5,6 +5,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    middlewareMode: false,
+    strictPort: false,  // Use next available port if 5173 is taken
   },
   build: {
     // Increase chunk size warning limit (Recharts is large)
@@ -18,5 +20,8 @@ export default defineConfig({
         },
       },
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'recharts'],
   },
 });

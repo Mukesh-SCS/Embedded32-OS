@@ -1,5 +1,5 @@
 {
-  "name": "embedded32-ethernet",
+  "name": "embedded32/ethernet",
   "version": "0.1.0",
   "description": "Ethernet layer - UDP/TCP, MQTT client, ProtoLite serialization",
   "type": "commonjs",

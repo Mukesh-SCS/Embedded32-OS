@@ -172,22 +172,56 @@ export class PluginManager {
         const dashboardPath = path.resolve(process.cwd(), 'embedded32-dashboard');
         
         try {
-          // On Windows, use shell with the command directly; on Unix use shell: false
+          // Serve pre-built dashboard or start dev server
           const isWindows = process.platform === 'win32';
           const command = 'npm run dev';
           
-          if (isWindows) {
-            dashboardProcess = spawn('cmd.exe', ['/c', command], {
-              cwd: dashboardPath,
-              stdio: 'pipe',
-              env: { ...process.env, NODE_NO_WARNINGS: '1' }
-            });
-          } else {
-            dashboardProcess = spawn('npm', ['run', 'dev'], {
-              cwd: dashboardPath,
-              stdio: 'pipe',
-              env: { ...process.env, NODE_NO_WARNINGS: '1' }
-            });
+          try {
+            // Try to use pre-built dist folder with a simple HTTP server
+            const distPath = path.join(dashboardPath, 'dist');
+            const fs = require('fs');
+            if (fs.existsSync(distPath)) {
+              // Use http-server to serve dist
+              dashboardProcess = spawn(
+                isWindows ? 'npx.cmd' : 'npx',
+                ['http-server', distPath, '-p', String(config.dashboard?.port || 5173), '-s'],
+                {
+                  cwd: dashboardPath,
+                  stdio: 'pipe',
+                  env: { ...process.env, NODE_NO_WARNINGS: '1' }
+                }
+              );
+            } else {
+              // Fall back to npm run dev
+              if (isWindows) {
+                dashboardProcess = spawn('cmd.exe', ['/c', command], {
+                  cwd: dashboardPath,
+                  stdio: 'pipe',
+                  env: { ...process.env, NODE_NO_WARNINGS: '1' }
+                });
+              } else {
+                dashboardProcess = spawn('npm', ['run', 'dev'], {
+                  cwd: dashboardPath,
+                  stdio: 'pipe',
+                  env: { ...process.env, NODE_NO_WARNINGS: '1' }
+                });
+              }
+            }
+          } catch (e) {
+            // If http-server not available, use npm run dev
+            if (isWindows) {
+              dashboardProcess = spawn('cmd.exe', ['/c', command], {
+                cwd: dashboardPath,
+                stdio: 'pipe',
+                env: { ...process.env, NODE_NO_WARNINGS: '1' }
+              });
+            } else {
+              dashboardProcess = spawn('npm', ['run', 'dev'], {
+                cwd: dashboardPath,
+                stdio: 'pipe',
+                env: { ...process.env, NODE_NO_WARNINGS: '1' }
+              });
+            }
           }
           
           // Capture output for logging
