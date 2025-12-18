@@ -1,87 +1,272 @@
-# embedded32-sdk-js
+# Embedded32 SDK for JavaScript/TypeScript
 
-> JavaScript/TypeScript SDK for Node.js applications
+> **Phase 3 SDK** - A J1939 client library for interacting with the Embedded32 platform.
 
-## Overview
+## What the SDK IS
 
-High-level JavaScript SDK for building applications with Embedded32:
+- ✅ A **client** of an already running Embedded32 system
+- ✅ A **J1939 participant** on the network
+- ✅ A **consumer and producer** of PGNs
+- ✅ A way for external developers to build on Embedded32
 
-- **J1939 API** - Simple J1939 interface
-- **CAN API** - Low-level CAN access
-- **MQTT Integration** - Cloud connectivity
-- **Event-driven** - Async/await and events
-- **TypeScript** - Full type definitions
+## What the SDK is NOT
+
+- ❌ A simulator
+- ❌ A core dependency
+- ❌ A shortcut into internal state
+- ❌ A raw CAN injector
 
 ## Installation
 
 ```bash
-npm install embedded32-sdk-js
+npm install @embedded32/sdk-js
 ```
 
 ## Quick Start
 
-```javascript
-import { J1939, CANBus, MQTTClient } from 'embedded32-sdk-js';
+```typescript
+import { J1939Client, PGN, SA } from '@embedded32/sdk-js';
 
-// Create J1939 instance
-const j1939 = new J1939('can0');
-
-// Listen for engine data
-j1939.on('pgn:61444', (message) => {
-  console.log('Engine RPM:', message.spns.engineSpeed);
+// Create client with your source address
+const client = new J1939Client({
+  interface: 'vcan0',
+  sourceAddress: SA.DIAG_TOOL_2  // 0xFA
 });
 
-// Send a message
-await j1939.send({
-  pgn: 65226,
-  priority: 6,
-  data: { activeCode: 1 }
+// Connect to the J1939 network
+await client.connect();
+
+// Subscribe to Engine Controller messages
+client.onPGN(PGN.EEC1, (msg) => {
+  console.log(`Engine Speed: ${msg.spns.engineSpeed} RPM`);
+  console.log(`Engine Torque: ${msg.spns.torque}%`);
 });
+
+// Subscribe to Engine Temperature
+client.onPGN(PGN.ET1, (msg) => {
+  console.log(`Coolant Temp: ${msg.spns.coolantTemp}°C`);
+});
+
+// Request specific data from the network
+await client.requestPGN(PGN.ET1);
+
+// Send a command (Engine Control Command)
+await client.sendPGN(PGN.ENGINE_CONTROL_CMD, {
+  targetRpm: 1200,
+  enable: 1
+});
+
+// Disconnect when done
+await client.disconnect();
 ```
 
 ## API Reference
 
-### J1939 Class
+### Constructor
 
 ```typescript
-class J1939 {
-  constructor(interface: string, options?: J1939Options);
-  
-  on(event: string, callback: Function): void;
-  send(message: J1939Message): Promise<void>;
-  claim(address: number, name: bigint): Promise<void>;
-  
-  decodePGN(pgn: number, data: Buffer): object;
-  encodePGN(pgn: number, data: object): Buffer;
+const client = new J1939Client(config: J1939ClientConfig);
+```
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `interface` | string | ✅ | - | CAN interface name (e.g., "vcan0") |
+| `sourceAddress` | number | ✅ | - | Your ECU's source address (0x00-0xFD) |
+| `transport` | string | ❌ | auto | Transport type: 'socketcan', 'pcan', 'virtual' |
+| `debug` | boolean | ❌ | false | Enable verbose logging |
+
+### Methods
+
+#### `connect(): Promise<void>`
+
+Connect to the J1939 network. Must be called before any other operations.
+
+```typescript
+await client.connect();
+```
+
+#### `disconnect(): Promise<void>`
+
+Disconnect from the network and clean up resources.
+
+```typescript
+await client.disconnect();
+```
+
+#### `onPGN(pgn: number, handler: (msg: J1939Message) => void): () => void`
+
+Subscribe to a specific PGN. Returns an unsubscribe function.
+
+```typescript
+const unsubscribe = client.onPGN(0xF004, (msg) => {
+  console.log(msg.spns.engineSpeed);
+});
+
+// Later: stop listening
+unsubscribe();
+```
+
+#### `requestPGN(pgn: number, destination?: number): Promise<void>`
+
+Request data from the network using Request PGN (59904).
+
+```typescript
+// Request from all ECUs
+await client.requestPGN(0xFEEE);
+
+// Request from specific ECU
+await client.requestPGN(0xF004, 0x00);  // Ask Engine ECU
+```
+
+#### `sendPGN(pgn: number, data: PGNData, destination?: number): Promise<void>`
+
+Send a PGN with encoded data.
+
+```typescript
+// Send engine control command
+await client.sendPGN(0xEF00, {
+  targetRpm: 1500,
+  enable: 1
+});
+```
+
+### Message Structure
+
+When you receive a message via `onPGN()`, it has this structure:
+
+```typescript
+interface J1939Message {
+  pgn: number;              // 0xF004
+  pgnName: string;          // "Electronic Engine Controller 1 (EEC1)"
+  sourceAddress: number;    // 0x00
+  destinationAddress: number; // 0xFF (broadcast)
+  priority: number;         // 3
+  spns: {                   // Decoded values
+    engineSpeed: 1500,
+    torque: 45
+  };
+  raw: Uint8Array;          // Raw bytes (for debugging)
+  timestamp: number;        // Unix timestamp
 }
 ```
 
-### CANBus Class
+### Constants
 
 ```typescript
-class CANBus {
-  constructor(interface: string, options?: CANOptions);
-  
-  send(frame: CANFrame): Promise<void>;
-  on(event: 'frame', callback: (frame: CANFrame) => void): void;
-  
-  addFilter(id: number, mask: number): void;
-  removeFilter(id: number): void;
-}
+import { PGN, SA } from '@embedded32/sdk-js';
+
+// Well-known PGNs
+PGN.REQUEST           // 0xEA00 - Request PGN
+PGN.EEC1              // 0xF004 - Engine Controller 1
+PGN.ETC1              // 0xF003 - Transmission Controller 1
+PGN.ET1               // 0xFEEE - Engine Temperature 1
+PGN.DM1               // 0xFECA - Active Fault Codes
+PGN.ENGINE_CONTROL_CMD // 0xEF00 - Engine Control (Proprietary B)
+
+// Well-known Source Addresses
+SA.ENGINE_1           // 0x00
+SA.TRANSMISSION_1     // 0x03
+SA.DIAG_TOOL_1        // 0xF9
+SA.DIAG_TOOL_2        // 0xFA
+SA.GLOBAL             // 0xFF (broadcast)
 ```
 
-## Examples
+## Complete Example: Engine Monitor
 
-See the [examples](./examples) directory for complete examples.
+```typescript
+import { J1939Client, PGN, SA } from '@embedded32/sdk-js';
 
-## Phase 2 Deliverables (Weeks 10-14)
+async function main() {
+  const client = new J1939Client({
+    interface: 'vcan0',
+    sourceAddress: SA.DIAG_TOOL_2
+  });
 
-- [ ] J1939 wrapper API
-- [ ] CAN wrapper API
-- [ ] MQTT integration helpers
-- [ ] TypeScript definitions
-- [ ] Example projects
+  await client.connect();
+  console.log('Connected to J1939 network');
+
+  // Track engine state
+  const engineState = {
+    rpm: 0,
+    torque: 0,
+    coolantTemp: 0
+  };
+
+  // Subscribe to engine data
+  client.onPGN(PGN.EEC1, (msg) => {
+    engineState.rpm = msg.spns.engineSpeed as number;
+    engineState.torque = msg.spns.torque as number;
+    console.log(`RPM: ${engineState.rpm}, Torque: ${engineState.torque}%`);
+  });
+
+  client.onPGN(PGN.ET1, (msg) => {
+    engineState.coolantTemp = msg.spns.coolantTemp as number;
+    console.log(`Coolant: ${engineState.coolantTemp}°C`);
+  });
+
+  // Request initial data
+  await client.requestPGN(PGN.EEC1);
+  await client.requestPGN(PGN.ET1);
+
+  // After 5 seconds, command engine to 1200 RPM
+  setTimeout(async () => {
+    console.log('Commanding engine to 1200 RPM...');
+    await client.sendPGN(PGN.ENGINE_CONTROL_CMD, {
+      targetRpm: 1200,
+      enable: 1
+    });
+  }, 5000);
+
+  // Run for 30 seconds
+  setTimeout(async () => {
+    await client.disconnect();
+    console.log('Disconnected');
+  }, 30000);
+}
+
+main().catch(console.error);
+```
+
+## Architecture
+
+```
+SDK
+│
+├── Transport Layer
+│   └── SocketCAN / PCAN / Virtual
+│
+├── J1939 Client
+│   ├── decode PGNs (reuses @embedded32/j1939)
+│   ├── encode PGNs (reuses @embedded32/j1939)
+│   ├── send Request (59904)
+│   └── send Command PGN
+│
+└── Event API (push-based)
+```
+
+## Transport Support
+
+| Transport | Platform | Status |
+|-----------|----------|--------|
+| Virtual (vcan) | All | ✅ Supported |
+| SocketCAN | Linux | ✅ Supported |
+| PCAN | Windows | 🔜 Planned |
+
+## Running with Embedded32 Simulation
+
+1. Start the simulation:
+   ```bash
+   cd Embedded32
+   node embedded32-tools/dist/cli.js simulate vehicle/basic-truck
+   ```
+
+2. In another terminal, run your SDK client:
+   ```bash
+   npx ts-node my-client.ts
+   ```
+
+The SDK connects to the same virtual CAN bus and participates as a J1939 node.
 
 ## License
 
-MIT © Mukesh Mani Tripathi
+MIT

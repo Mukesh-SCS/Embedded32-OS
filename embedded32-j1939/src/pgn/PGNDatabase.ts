@@ -37,6 +37,14 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
     description: "[Simulation] Current gear and transmission state (proprietary format)",
   },
 
+  // Engine Control Command (Proprietary B - 0xEF00 / 61184)
+  // Phase 3: SDK can send this to control engine target RPM
+  0x00ef00: {
+    name: "Engine Control Command (Proprietary B)",
+    length: 8,
+    description: "Target RPM command. Bytes 0-1: Target RPM (uint16), Byte 2: Enable (0=ignore, 1=apply)",
+  },
+
   0x00fee9: {
     name: "Engine Temperature 1 (ET1)",
     length: 8,
