@@ -3,7 +3,7 @@
  * High-level API for creating and parsing J1939 messages
  */
 
-import { decodeJ1939, type DecodedJ1939Message } from 'embedded32-j1939';
+import { decodeJ1939, type DecodedJ1939Message } from '@embedded32/j1939';
 
 /**
  * J1939 Message Builder

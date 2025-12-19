@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "npx jest --passWithNoTests",
     "dev": "tsc --watch",
     "example": "npx ts-node examples/engine-monitor.ts"
   },
@@ -27,7 +27,9 @@
   ],
   "author": "Mukesh Mani Tripathi",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@embedded32/j1939": "*"
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",

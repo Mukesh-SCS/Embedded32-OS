@@ -17,9 +17,10 @@
     "test": "echo \"no tests yet\""
   },
   "dependencies": {
-    "@embedded32/can": "1.0.0",
-    "@embedded32/core": "1.0.0",
-    "@embedded32/j1939": "1.0.0",
+    "@embedded32/can": "*",
+    "@embedded32/core": "*",
+    "@embedded32/j1939": "*",
+    "@embedded32/sim": "*",
     "commander": "^14.0.2",
     "ws": "^8.18.3"
   },

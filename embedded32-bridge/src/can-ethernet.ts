@@ -4,7 +4,7 @@
  * Bi-directional routing with filtering and load shedding
  */
 
-import { decodeJ1939, type DecodedJ1939Message } from 'embedded32-j1939';
+import { decodeJ1939, type DecodedJ1939Message } from '@embedded32/j1939';
 
 export interface BridgeRule {
   enabled: boolean;
