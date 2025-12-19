@@ -33,6 +33,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mukesh-SCS/Embedded32.git",
+    "directory": "embedded32-supervisor"
+  },
   "sideEffects": false
 }
 
