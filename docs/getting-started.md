@@ -1,17 +1,18 @@
 # Getting Started with Embedded32
 
-## Installation
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+ (for JavaScript/TypeScript modules)
 - Python 3.8+ (for Python SDK)
 - GCC/Clang (for C SDK)
+- Linux/WSL (for SocketCAN support)
 
-### Install CLI Tools
+## Installation
+
+### CLI Tools
 
 ```bash
-npm install -g embedded32-tools
+npm install -g embedded32-cli
 ```
 
 Verify installation:
@@ -20,73 +21,110 @@ Verify installation:
 embedded32 --version
 ```
 
-### Install JavaScript SDK
+### JavaScript SDK
 
 ```bash
-npm install embedded32-sdk-js
+npm install @embedded32/sdk-js
 ```
 
-### Install Python SDK
+### Python SDK
 
 ```bash
-pip install embedded32-sdk-python
+pip install embedded32
 ```
 
-## Your First CAN Application
+## Setup CAN Interface
 
-### 1. Setup CAN Interface
+### Linux / WSL (Virtual CAN)
 
-On Linux with SocketCAN:
+```bash
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+```
+
+### Hardware CAN (Raspberry Pi / Linux)
 
 ```bash
 sudo ip link set can0 type can bitrate 250000
 sudo ip link set up can0
 ```
 
-### 2. Monitor CAN Traffic
+## First Steps
+
+### 1. Run Demo Mode
 
 ```bash
-j1939-monitor --iface can0
+embedded32 demo
 ```
 
-### 3. Send a J1939 Message
+This starts a full simulation with:
+- Virtual CAN bus
+- Engine/transmission/brake simulators
+- J1939 decoder
+- Web dashboard at http://localhost:5173
+
+### 2. Monitor J1939 Traffic
 
 ```bash
-j1939-send --iface can0 --pgn 61444 --data '{"engineSpeed": 1500}'
+embedded32 j1939 monitor --iface vcan0
 ```
 
-### 4. Using JavaScript SDK
+### 3. Use JavaScript SDK
 
 ```javascript
-import { J1939 } from 'embedded32-sdk-js';
+import { J1939Client, PGN, SA } from '@embedded32/sdk-js';
 
-const j1939 = new J1939('can0');
+const client = new J1939Client({
+  interface: 'vcan0',
+  sourceAddress: SA.DIAG_TOOL_2
+});
 
-// Listen for engine speed
-j1939.on('pgn:61444', (msg) => {
+await client.connect();
+
+client.onPGN(PGN.EEC1, (msg) => {
   console.log('Engine RPM:', msg.spns.engineSpeed);
 });
 
-j1939.start();
+await client.requestPGN(PGN.EEC1);
 ```
 
-## Next Steps
+### 4. Use Python SDK
 
-- [Architecture Overview](./architecture.md)
-- [Tutorials](./tutorials/)
-- [API Reference](./api-reference/)
+```python
+from embedded32 import J1939Client, PGN, SA
+
+client = J1939Client(
+    interface="vcan0",
+    source_address=SA.DIAG_TOOL_2
+)
+
+client.connect()
+
+@client.on_pgn(PGN.EEC1)
+def on_engine(msg):
+    print(f"Engine RPM: {msg.spns['engineSpeed']}")
+
+client.request_pgn(PGN.EEC1)
+```
 
 ## Hardware Support
 
-Embedded32 works on:
+| Platform | CAN Interface | Status |
+|----------|--------------|--------|
+| Linux | SocketCAN | ✅ Full support |
+| Raspberry Pi | SocketCAN, MCP2515 | ✅ Full support |
+| WSL | Virtual CAN | ✅ Full support |
+| Windows | PCAN-USB | ⚠️ Gateway mode |
+| macOS | Simulator | ✅ Testing only |
 
-- **Linux** - Any system with SocketCAN
-- **Raspberry Pi** - Native CAN or MCP2515 HAT
-- **STM32** - Using C SDK
-- **ESP32** - Using C SDK
+## Next Steps
+
+- [First Run Tutorial](./tutorials/first-run.md)
+- [J1939 Quick Start](./J1939_QUICKSTART.md)
+- [Examples](../examples/)
 
 ## Getting Help
 
-- Check the [FAQ](./faq.md)
 - Browse [examples](../examples/)
 - Open an [issue](https://github.com/Mukesh-SCS/Embedded32/issues)

@@ -1,0 +1,26 @@
+{
+  "name": "@embedded32/sdk-python",
+  "version": "1.0.0",
+  "description": "J1939 client library for Python - interacting with Embedded32 platform",
+  "private": true,
+  "scripts": {
+    "test": "python -m pytest tests/",
+    "lint": "python -m black --check src/",
+    "format": "python -m black src/"
+  },
+  "keywords": [
+    "j1939",
+    "can",
+    "automotive",
+    "vehicle",
+    "embedded32",
+    "python"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/embedded32/embedded32.git",
+    "directory": "embedded32-sdk-python"
+  }
+}

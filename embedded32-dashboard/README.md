@@ -1,16 +1,16 @@
 # embedded32-dashboard
 
-> Web-based real-time monitoring and visualization
+Web-based real-time monitoring and visualization for Embedded32.
 
 ## Overview
 
 Browser-based dashboard for monitoring and controlling Embedded32 systems:
 
-- **Real-time monitoring** - Live CAN/J1939 data
-- **PGN/SPN explorer** - Browse and decode messages
-- **Network topology** - Visualize device network
-- **Data logging** - Record and replay sessions
-- **Signal graphing** - Plot time-series data
+- **Real-time Monitoring** - Live CAN/J1939 data visualization
+- **PGN/SPN Explorer** - Browse and decode messages
+- **Network Topology** - Visualize device network
+- **Data Logging** - Record and replay sessions
+- **Signal Graphing** - Plot time-series data
 
 ## Installation
 
@@ -18,29 +18,19 @@ Browser-based dashboard for monitoring and controlling Embedded32 systems:
 npm install embedded32-dashboard
 ```
 
-## Features
+## Usage
 
-- WebSocket-based real-time updates
-- Responsive React UI
-- Device discovery and status
-- Custom dashboard layouts
-- Export data to CSV/JSON
+### Start Dashboard
 
-## Architecture
+```bash
+# Using CLI
+embedded32 dashboard --port 3000
 
-```
-embedded32-dashboard/
-├── src/
-│   ├── components/     # React components
-│   ├── pages/          # Dashboard pages
-│   ├── services/       # WebSocket services
-│   ├── hooks/          # Custom React hooks
-│   └── utils/          # Utilities
-├── public/
-└── server/             # Backend WebSocket server
+# Open browser
+# http://localhost:3000
 ```
 
-## Development
+### Development
 
 ```bash
 # Install dependencies
@@ -53,23 +43,13 @@ npm run dev
 npm run build
 ```
 
-## Quick Start
+## Features
 
-```bash
-# Start the dashboard server
-embedded32 dashboard --port 3000
-
-# Open in browser
-# http://localhost:3000
-```
-
-## Phase 2 Deliverables (Weeks 10-12)
-
-- [ ] Real-time PGN viewer
-- [ ] CAN frame inspector
-- [ ] Device status panel
-- [ ] Signal plotting
-- [ ] Session logging
+- WebSocket-based real-time updates
+- Responsive React UI
+- Device discovery and status
+- Custom dashboard layouts
+- Export data to CSV/JSON
 
 ## License
 

@@ -92,3 +92,5 @@ tsconfig.json.bak
 
 # Private documentation
 docs/roadmap.md
+# SDK Python internal files
+embedded32-sdk-python/src/embedded32/__init__.py

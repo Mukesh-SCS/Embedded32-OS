@@ -1,5 +1,5 @@
 /**
- * Engine ECU Simulator - Phase 2/3
+ * Engine ECU Simulator
  * 
  * Broadcasts:
  * - PGN 61444 (0xF004) - Electronic Engine Controller 1 (EEC1)
@@ -8,7 +8,7 @@
  * Responds to:
  * - PGN Request (59904) for engine data
  * 
- * Phase 3: Accepts commands:
+ * Accepts commands:
  * - PGN 61184 (0xEF00) - Engine Control Command (Proprietary B)
  *   Bytes 0-1: Target RPM, Byte 2: Enable (0=ignore, 1=apply)
  */
@@ -76,7 +76,7 @@ export class EngineECU extends EventEmitter implements IECUSimulator {
       this.handleRequest(pgn, requesterSA);
     });
 
-    // Phase 3: Listen for Engine Control Commands
+    // Listen for Engine Control Commands
     this.j1939Port.on("message", (msg: J1939Message) => {
       this.handleMessage(msg);
     });

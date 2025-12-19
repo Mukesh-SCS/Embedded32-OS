@@ -1,7 +1,7 @@
 {
   "name": "@embedded32/sdk-js",
   "version": "1.0.0",
-  "description": "Phase 3 SDK - J1939 client library for interacting with Embedded32 platform",
+  "description": "J1939 client library for interacting with Embedded32 platform",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

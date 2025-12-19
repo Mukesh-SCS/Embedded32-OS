@@ -1,0 +1,26 @@
+{
+  "name": "@embedded32/sdk-c",
+  "version": "1.0.0",
+  "description": "J1939 client library for C/C++ - interacting with Embedded32 platform",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Use CMake or make to build the C SDK'",
+    "test": "echo 'Run tests using your C test framework'"
+  },
+  "keywords": [
+    "j1939",
+    "can",
+    "automotive",
+    "vehicle",
+    "embedded32",
+    "c",
+    "embedded"
+  ],
+  "author": "Mukesh Mani Tripathi",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/embedded32/embedded32.git",
+    "directory": "embedded32-sdk-c"
+  }
+}

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="embedded32",
     version="1.0.0",
-    description="Phase 3 SDK - J1939 client library for interacting with Embedded32 platform",
+    description="J1939 client library for interacting with Embedded32 platform",
     author="Mukesh Mani Tripathi",
     author_email="",
     license="MIT",

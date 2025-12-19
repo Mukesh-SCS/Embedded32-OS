@@ -1,7 +1,7 @@
 /**
  * Embedded32 - Plugin System
  * 
- * Phase 3 FROZEN plugin contract and loader.
+ * Plugin contract and loader.
  */
 
 export type {
