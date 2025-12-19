@@ -1,5 +1,5 @@
 {
-  "name": "embedded32/ethernet",
+  "name": "@embedded32/ethernet",
   "version": "1.0.0",
   "description": "Ethernet layer - UDP/TCP, MQTT client, ProtoLite serialization",
   "type": "commonjs",
@@ -19,6 +19,15 @@
   ],
   "author": "Mukesh Mani Tripathi",
   "license": "MIT",
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mukesh-SCS/Embedded32.git",
+    "directory": "embedded32-ethernet"
+  },
   "dependencies": {
     "@embedded32/core": "*",
     "mqtt": "^5.0.0"

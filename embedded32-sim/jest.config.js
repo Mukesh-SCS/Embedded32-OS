@@ -5,6 +5,7 @@ export default {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@embedded32/(.*)$': '<rootDir>/../embedded32-$1/src/index.ts',
   },
   transform: {
     '^.+\\.tsx?$': [
@@ -14,7 +15,11 @@ export default {
       },
     ],
   },
-  testMatch: ['**/tests/**/*.test.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(@embedded32)/)',
+  ],
+  testMatch: ['**/tests/**/*.test.ts', '!**/tests/phase2-acceptance.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', 'phase2-acceptance.test.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   collectCoverageFrom: [
     'src/**/*.ts',

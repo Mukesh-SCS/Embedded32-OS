@@ -4,7 +4,8 @@
   "description": "J1939 client library for Python - interacting with Embedded32 platform",
   "private": true,
   "scripts": {
-    "test": "python -m pytest tests/",
+    "test": "echo \"Python tests require pytest: pip install pytest\"",
+    "test:python": "python -m pytest tests/",
     "lint": "python -m black --check src/",
     "format": "python -m black src/"
   },

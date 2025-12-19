@@ -173,11 +173,15 @@ e32_error_t e32_j1939_request_pgn(
 
 
 /* ==========================================================================
- * PGN SENDING (RAW)
+ * INTERNAL/ADVANCED API (NOT PART OF PUBLIC CONTRACT)
  * ========================================================================== */
 
 /**
  * @brief Send raw PGN data
+ * 
+ * @warning INTERNAL API - Not part of the stable public API.
+ *          This function may change or be removed without notice.
+ *          Use e32_j1939_send_engine_control() for normal usage.
  * 
  * @param client Client handle
  * @param pgn Parameter Group Number
@@ -186,6 +190,8 @@ e32_error_t e32_j1939_request_pgn(
  * @param destination Target address
  * @param priority Message priority (0-7, default 6)
  * @return E32_OK on success, error code otherwise
+ * 
+ * @internal
  */
 e32_error_t e32_j1939_send_raw(
     e32_j1939_client_t client,

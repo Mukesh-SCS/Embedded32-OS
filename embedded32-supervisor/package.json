@@ -16,8 +16,8 @@
     "@embedded32/core": "*",
     "@embedded32/can": "*",
     "@embedded32/j1939": "*",
-    "embedded32-ethernet": "^0.1.0",
-    "embedded32-bridge": "^0.1.0",
+    "@embedded32/ethernet": "*",
+    "@embedded32/bridge": "*",
     "yaml": "^2.3.0",
     "ts-node": "^10.9.0"
   },
@@ -32,6 +32,11 @@
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mukesh-SCS/Embedded32.git",
+    "directory": "embedded32-supervisor"
   },
   "sideEffects": false
 }

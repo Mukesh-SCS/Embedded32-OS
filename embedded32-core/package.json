@@ -36,6 +36,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mukesh-SCS/Embedded32.git",
+    "directory": "embedded32-core"
+  },
   "sideEffects": false,
   "optionalDependencies": {
     "onoff": "^6.0.3"

@@ -37,7 +37,7 @@ Usage:
   embedded32 <command> [options]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  PHASE 2 COMMANDS (Primary)
+                     COMMANDS (Primary)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   simulate <profile>     Run vehicle simulation from a profile
@@ -109,11 +109,11 @@ async function main() {
 
   const command = args[0];
   const subcommand = args[1];
-  const cmdArgs = args.slice(1); // For Phase 2 commands
+  const cmdArgs = args.slice(1); // For Primary commands
   const legacyArgs = args.slice(2); // For legacy commands
 
   // ════════════════════════════════════════════════════════════════
-  // PHASE 2 COMMANDS (Primary)
+  //               COMMANDS (Primary)
   // ════════════════════════════════════════════════════════════════
 
   try {

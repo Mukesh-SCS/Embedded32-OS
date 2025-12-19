@@ -4,7 +4,7 @@
  * Subscribe to commands and inject into CAN
  */
 
-import { decodeJ1939 } from 'embedded32-j1939';
+import { decodeJ1939 } from '@embedded32/j1939';
 
 export interface MQTTBridgeConfig {
   topicPrefix: string;

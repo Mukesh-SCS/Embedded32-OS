@@ -15,8 +15,8 @@ from .types import (
     CANFrame,
     PGN
 )
-from .codec import decode_frame, encode_frame, build_j1939_id, encode_pgn_data
-from .transport import VirtualTransport
+from ._codec import decode_frame, encode_frame, build_j1939_id, encode_pgn_data
+from ._transport import VirtualTransport
 
 
 class J1939Client:
