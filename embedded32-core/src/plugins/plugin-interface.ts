@@ -1,7 +1,7 @@
 /**
  * Embedded32 - ECU Plugin Contract v1
  * 
- * This file defines the FROZEN plugin interface for Phase 3.
+ * This file defines the plugin interface for ECU simulators.
  * All ECU plugins must implement this interface.
  * 
  * CONSTRAINTS (NON-NEGOTIABLE):
@@ -255,7 +255,7 @@ export const PluginPGN = {
   // Request
   REQUEST: 0xEA00,        // Request PGN
   
-  // Command (Phase 3)
+  // Command
   ENGINE_CONTROL_CMD: 0xEF00,  // Engine Control Command
 } as const;
 

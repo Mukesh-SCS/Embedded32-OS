@@ -1,7 +1,7 @@
 /**
  * Embedded32 SDK for JavaScript/TypeScript
  * 
- * Phase 3 SDK - A J1939 client library for interacting with Embedded32.
+ * A J1939 client library for interacting with Embedded32.
  * 
  * @module @embedded32/sdk-js
  * @version 1.0.0

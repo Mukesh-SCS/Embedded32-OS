@@ -2,7 +2,7 @@
  * J1939 Parameter Group Number (PGN) Database
  *
  * This is a minimal starting database for common engine/vehicle parameters.
- * Extended database with 500+ PGNs can be added in Phase 3.
+ * Extended database with 500+ PGNs can be added as needed.
  *
  * NOTE: Some PGNs in this database are minimal or proprietary for simulation
  * purposes. Always refer to SAE J1939 documentation for authoritative definitions.
@@ -38,7 +38,7 @@ export const PGN_DATABASE: Record<number, PGNInfo> = {
   },
 
   // Engine Control Command (Proprietary B - 0xEF00 / 61184)
-  // Phase 3: SDK can send this to control engine target RPM
+  // SDK can send this to control engine target RPM
   0x00ef00: {
     name: "Engine Control Command (Proprietary B)",
     length: 8,

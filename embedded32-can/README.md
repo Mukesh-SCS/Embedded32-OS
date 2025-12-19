@@ -2,14 +2,15 @@
 
 Lightweight, driver-agnostic CAN bus abstraction for the Embedded32 platform.
 
-This package provides a clean and modern TypeScript interface for sending and receiving CAN frames with support for:
+## Overview
 
-- **SocketCAN** (Linux, Raspberry Pi, WSL)
-- **MockCANDriver** (testing, CI, simulation)
-- **Custom driver backends** (implement your own hardware layer)
+This package provides a TypeScript interface for CAN communication with support for:
 
-> This module does not implement J1939 encoding/decoding.
-> PGN/SPN logic is part of `@embedded32/j1939`.
+- **SocketCAN** - Linux, Raspberry Pi, WSL
+- **MockCANDriver** - Testing, CI, simulation
+- **Custom Drivers** - Implement your own hardware layer
+
+> This module does not implement J1939 encoding/decoding. PGN/SPN logic is part of `@embedded32/j1939`.
 
 ## Installation
 
@@ -17,13 +18,16 @@ This package provides a clean and modern TypeScript interface for sending and re
 npm install @embedded32/can
 ```
 
-> **Platform Support:**  
-> - Linux / Raspberry Pi / WSL → full SocketCAN support  
-> - macOS / Windows → use MockCANDriver or upcoming USB-CAN drivers
+## Platform Support
 
-## Quick Start
+| Platform | Driver | Status |
+|----------|--------|--------|
+| Linux / Raspberry Pi / WSL | SocketCAN | ✅ Full support |
+| macOS / Windows | MockCANDriver | ✅ Simulation only |
 
-### Using SocketCAN (Linux / Raspberry Pi)
+## Usage
+
+### SocketCAN (Linux)
 
 ```typescript
 import { CANInterface, SocketCANDriver } from "@embedded32/can";
@@ -47,28 +51,7 @@ can.onMessage((frame) => {
 can.close();
 ```
 
-> **Note:** SocketCAN is only available on Linux-based systems.
-
-> **Error Handling:**  
-> SocketCAN operations may throw if:
-> - the interface (e.g., `can0`) does not exist,
-> - you lack permissions (`sudo` required), or
-> - the bus is in an error/passive/off state.
-> 
-> Always wrap driver creation in try/catch when deploying:
-
-```typescript
-let can: CANInterface;
-
-try {
-  can = new CANInterface(new SocketCANDriver("can0"));
-} catch (err) {
-  console.error("Failed to initialize CAN:", err);
-  process.exit(1);
-}
-```
-
-### Using MockCANDriver (testing & simulation)
+### MockCANDriver (Cross-Platform Testing)
 
 ```typescript
 import { CANInterface, MockCANDriver } from "@embedded32/can";
@@ -83,14 +66,7 @@ can.send({
 });
 ```
 
-> The MockCANDriver echoes every frame sent, making it ideal for unit tests.
-
-> **Tip:** The MockCANDriver is fully cross-platform and runs on Windows, macOS, Linux, and CI systems.  
-> Use it when developing on machines that do *not* support SocketCAN.
-
-### Creating a Custom Driver
-
-Implement `ICANDriver`:
+### Custom Driver
 
 ```typescript
 import { ICANDriver, CANFrame } from "@embedded32/can";
@@ -101,18 +77,14 @@ export class MyDriver implements ICANDriver {
   }
 
   onMessage(handler: (frame: CANFrame) => void) {
-    // Call handler whenever a frame arrives
+    // Call handler when frame arrives
   }
 
   close() {
-    // Cleanup hardware resources
+    // Cleanup
   }
 }
-```
 
-Then wrap it:
-
-```typescript
 const can = new CANInterface(new MyDriver());
 ```
 
@@ -124,20 +96,20 @@ const can = new CANInterface(new MyDriver());
 interface CANFrame {
   id: number;
   data: number[];
-  extended?: boolean; // true = 29-bit, false = 11-bit
+  extended?: boolean;  // true = 29-bit, false = 11-bit
   timestamp?: number;
 }
 ```
 
 ### CANInterface
 
-- `.send(frame)` - Send a CAN frame
-- `.onMessage(handler)` - Register message handler
-- `.close()` - Close the interface
+| Method | Description |
+|--------|-------------|
+| `send(frame)` | Send a CAN frame |
+| `onMessage(handler)` | Register message handler |
+| `close()` | Close the interface |
 
 ### ICANDriver
-
-Your driver must implement:
 
 ```typescript
 interface ICANDriver {
@@ -149,163 +121,18 @@ interface ICANDriver {
 
 ## SocketCAN Setup
 
-### Install tools
-
 ```bash
+# Install CAN utilities
 sudo apt-get install can-utils
-```
 
-### Create a virtual CAN interface
-
-```bash
+# Create virtual CAN interface
 sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
-```
 
-### Bring up hardware CAN (example: 500 kbps)
-
-```bash
+# Setup hardware CAN (500 kbps)
 sudo ip link set can0 type can bitrate 500000
 sudo ip link set up can0
 ```
-
-## Architecture
-
-```
-@embedded32/can
-├── src/
-│   ├── CANTypes.ts
-│   ├── CANDriver.ts
-│   ├── SocketCANDriver.ts
-│   ├── MockCANDriver.ts
-│   └── index.ts
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## Integration with Embedded32 Runtime
-
-Example CAN gateway module:
-
-```typescript
-import { BaseModule } from "@embedded32/core";
-import { CANInterface, SocketCANDriver } from "@embedded32/can";
-
-export class CANGateway extends BaseModule {
-  private can!: CANInterface;
-
-  onStart() {
-    this.can = new CANInterface(new SocketCANDriver("can0"));
-
-    this.can.onMessage((frame) => {
-      this.bus.publish("can.rx", frame);
-    });
-
-    this.bus.subscribe("can.tx", (msg) => {
-      this.can.send(msg.payload);
-    });
-  }
-
-  onStop() {
-    this.can.close();
-  }
-}
-```
-
-## Examples
-
-Working examples are in the `examples/` folder:
-
-### 1. Basic Mock Example
-```bash
-npm run build
-node dist/examples/basic-mock.js
-```
-
-Demonstrates:
-- Using MockCANDriver
-- Sending and receiving frames
-- Message handlers
-
-### 2. SocketCAN Demo
-```bash
-npm run build
-node dist/examples/socketcan-demo.js
-```
-
-Demonstrates:
-- Real SocketCAN interface
-- Error handling for missing interfaces
-- Sending OBD-II diagnostic frames
-
-**Setup virtual CAN first:**
-```bash
-sudo ip link add dev vcan0 type vcan
-sudo ip link set up vcan0
-```
-
-### 3. Custom Driver Example
-```bash
-npm run build
-node dist/examples/custom-driver.js
-```
-
-Demonstrates:
-- Implementing a custom ICANDriver
-- Creating a logging wrapper around existing drivers
-- Extending base functionality
-
-## Testing
-
-Basic tests are included in `tests/`:
-
-```bash
-npm test
-```
-
-Currently includes:
-- MockCANDriver send/receive tests
-- Standard and extended frame support
-- Multiple listener handling
-- Timestamp validation
-- CANFrame validation
-
-To set up full testing with Jest:
-
-```bash
-npm install --save-dev jest @types/jest ts-jest
-```
-
-Update `package.json`:
-```json
-{
-  "scripts": {
-    "test": "jest"
-  }
-}
-```
-
-Create `jest.config.js`:
-```javascript
-export default {
-  preset: "ts-jest",
-  testEnvironment: "node",
-  testMatch: ["**/tests/**/*.test.ts"],
-  moduleNameMapper: {
-    "^(\\.{1,2}/.*)\\.js$": "$1"
-  }
-};
-```
-
-## Roadmap
-
-- [ ] CAN FD support
-- [ ] MCP2515 SPI driver
-- [ ] USB-to-CAN driver support (Peak, Kvaser, Seeed)
-- [ ] Native frame filtering
-- [ ] Bus load & diagnostics
-- [ ] J1939 integration at `@embedded32/j1939` level
 
 ## License
 
