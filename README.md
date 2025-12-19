@@ -125,6 +125,8 @@ def on_engine(msg):
 client.request_pgn(PGN.EEC1)
 ```
 
+> **API Stability:** SDK public APIs (`J1939Client`, `connect`, `on_pgn`, `request_pgn`, `send_pgn`) are frozen as of v1.0.0. Internal modules (`_codec`, `_transport`, `/internal`) are not part of the supported API.
+
 ---
 
 ## Hardware Support

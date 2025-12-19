@@ -3,43 +3,28 @@
  * 
  * A J1939 client library for interacting with Embedded32.
  * 
+ * PUBLIC API - Only exports below are part of the stable SDK contract.
+ * For internal/advanced APIs, import from '@embedded32/sdk-js/internal'.
+ * 
  * @module @embedded32/sdk-js
  * @version 1.0.0
  */
 
-// Main client
+// =============================================================================
+// PUBLIC API (Stable)
+// =============================================================================
+
+// Main client - the primary interface
 export { J1939Client } from './client.js';
 
-// Types
+// Public types
 export type {
   J1939ClientConfig,
   J1939Message,
   PGNData,
   PGNHandler,
-  IJ1939Client,
-  ITransport,
-  CANFrame,
-  TransportConfig
 } from './types.js';
 
 // Constants
 export { PGN, SA } from './types.js';
-
-// Transport layer (for advanced users)
-export { VirtualTransport } from './transport/index.js';
-
-// J1939 codec (for advanced users)
-export {
-  parseJ1939Id,
-  buildJ1939Id,
-  getPGNName,
-  decodeSPNs,
-  encodePGNData,
-  decodeFrame,
-  encodeFrame
-} from './j1939/index.js';
-
-// Legacy exports for backward compatibility
-export { CANBus, type CANFrame as LegacyCANFrame } from './can-api.js';
-export { J1939MessageBuilder, J1939MessageParser } from './j1939-api.js';
 

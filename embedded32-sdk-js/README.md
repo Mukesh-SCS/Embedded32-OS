@@ -107,6 +107,24 @@ SA.DIAG_TOOL_2         // 0xFA
 SA.GLOBAL              // 0xFF
 ```
 
+## API Stability
+
+The public SDK API is considered **stable as of v1.0.0**:
+
+| API | Status |
+|-----|--------|
+| `J1939Client` | ✅ Stable |
+| `connect()` / `disconnect()` | ✅ Stable |
+| `onPGN(pgn, handler)` | ✅ Stable |
+| `requestPGN(pgn)` | ✅ Stable |
+| `sendPGN(pgn, data)` | ✅ Stable |
+| `PGN` / `SA` constants | ✅ Stable |
+
+**Internal modules** (available via `@embedded32/sdk-js/internal`) are **not part of the public API** and may change without notice:
+- Transport implementations
+- Codec functions
+- Legacy CAN APIs
+
 ## License
 
 MIT © Mukesh Mani Tripathi

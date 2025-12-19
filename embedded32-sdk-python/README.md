@@ -125,6 +125,24 @@ SA.DIAG_TOOL_2         # 0xFA
 SA.GLOBAL              # 0xFF
 ```
 
+## API Stability
+
+The public SDK API is considered **stable as of v1.0.0**:
+
+| API | Status |
+|-----|--------|
+| `J1939Client` | ✅ Stable |
+| `connect()` / `disconnect()` | ✅ Stable |
+| `on_pgn(pgn, handler)` | ✅ Stable |
+| `request_pgn(pgn)` | ✅ Stable |
+| `send_pgn(pgn, data)` | ✅ Stable |
+| `PGN` / `SA` constants | ✅ Stable |
+
+**Internal modules** (importable via `embedded32._codec`, `embedded32._transport`) are **not part of the public API** and may change without notice:
+- Transport implementations
+- Codec functions
+- Low-level CAN types
+
 ## License
 
 MIT © Mukesh Mani Tripathi

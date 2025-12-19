@@ -105,7 +105,6 @@ e32_j1939_destroy(client);
 | `e32_j1939_on_pgn()` | Subscribe to PGN with callback |
 | `e32_j1939_request_pgn()` | Request PGN from ECU |
 | `e32_j1939_poll()` | Process incoming messages |
-| `e32_j1939_send_raw()` | Send raw CAN frame |
 | `e32_j1939_send_engine_control()` | Send engine control command |
 
 ## Constants
@@ -145,6 +144,23 @@ cd embedded32-sdk-c
 gcc -I include -o example examples/engine_monitor.c src/*.c
 ./example
 ```
+
+## API Stability
+
+The public SDK API is considered **stable as of v1.0.0**:
+
+| API | Status |
+|-----|--------|
+| `e32_j1939_create()` / `e32_j1939_destroy()` | ✅ Stable |
+| `e32_j1939_connect()` / `e32_j1939_disconnect()` | ✅ Stable |
+| `e32_j1939_on_pgn()` | ✅ Stable |
+| `e32_j1939_request_pgn()` | ✅ Stable |
+| `e32_j1939_send_engine_control()` | ✅ Stable |
+| `E32_PGN_*` / `E32_SA_*` constants | ✅ Stable |
+
+**Internal APIs** (marked with `@internal` in headers) are **not part of the public API** and may change without notice:
+- `e32_j1939_send_raw()` - Low-level raw frame access
+- Codec utilities in `e32_codec.h`
 
 ## License
 
